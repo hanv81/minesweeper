@@ -9,7 +9,7 @@ import sys
 class Minesweeper(gym.Env):
 	metadata = {'render.modes': ['human']}
 	UNKNOWN = -1
-	MINE = -99999
+	MINE = -99
 
 	def __init__(self, rows=10, cols=10, mines=10):
 		
@@ -37,37 +37,34 @@ class Minesweeper(gym.Env):
 		xy = x + y
 		return xy
 
-	def checkDigit(self,coord):
-		n = coord % 10
-		return n == coord
-
+	def scanCoord(self, coord):
+		pass
 
 	def step(self, coord ):
 		done = False
 		
-		self.coord = (int(coord[0]),int(coord[1]))
+		self.coord = coord
 
 		if self.reward < -100 :
 			done = True
 			self.reward = -9999
 
-		if self.coord in self.clickedCoords:
+		if coord in self.clickedCoords:
 		    self.reward -=  1
 
-		elif self.coord in self.mine_coords:
+		elif coord in self.mine_coords:
 		    # Clicked on a mine!
-		    self.state[self.coord] = Minesweeper.MINE
+		    self.state[coord] = Minesweeper.MINE
 		    self.reward = Minesweeper.MINE # -99
-		    self.clickedCoords.add(self.coord)
+		    self.clickedCoords.add(coord)
 		    done = True
 		else:
 		    self.neighboring_mines = 0
-		    for r in range(self.coord[0]-1, self.coord[0]+2):
-		        for c in range(self.coord[1]-1, self.coord[1]+2):
-		            if r >= 0 and c >= 0:
-		                if (r,c) in self.mine_coords:
-		                    self.neighboring_mines += 1
-		    self.state[self.coord] = self.neighboring_mines
+		    for r in range(coord[0]-1, coord[0]+1):
+		        for c in range(coord[1]-1, coord[1]+1):
+		            if (r,c) in self.mine_coords:
+		                self.neighboring_mines += 1
+		    self.state[coord] = self.neighboring_mines
 		    self.neighboring_mines = 0
 		    self.coords_to_clear -= 1
 		    if self.coords_to_clear == 0:
@@ -75,7 +72,7 @@ class Minesweeper(gym.Env):
 		        done = True
 		    else:
 		        self.reward += 4
-		        self.clickedCoords.add(self.coord)
+		        self.clickedCoords.add(coord)
 		
 		return (self.state, self.reward, done, self.info)
 
@@ -99,9 +96,9 @@ class Minesweeper(gym.Env):
 		for x in range(self.rows):
 		    sys.stdout.write(self.letter_Axis[x])
 		    for y in range(self.cols):
-		        if self.state[x][y] == -99:                  
+		        if self.state[x][y] == Minesweeper.MINE:
 		            sys.stdout.write(' x')
-		        elif self.state[x][y] == -1:                  
+		        elif self.state[x][y] == -1:
 		            sys.stdout.write(' .')
 		        elif self.state[x][y] != -1:
 		            sys.stdout.write(' %s' % int(self.state[x][y]))
