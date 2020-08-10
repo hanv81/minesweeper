@@ -23,7 +23,6 @@ class Minesweeper(gym.Env):
 		self.letter_Axis = ['0','1','2','3','4','5','6','7','8','9','10','11','12','13','14','15','16','17','18','19']
 		self.chosenCoords = []
 		self.state = np.full([self.rows, self.cols], Minesweeper.UNKNOWN)
-		self.neighboring_mines = 0
 		self.reward = 0
 		self.info = dict()
 		self.coordcount = dict()
@@ -38,7 +37,20 @@ class Minesweeper(gym.Env):
 		return xy
 
 	def scanCoord(self, coord):
-		pass
+		list = []
+		neighboring_mines = 0
+		for r in range(coord[0]-1, coord[0]+2):
+		    for c in range(coord[1]-1, coord[1]+2):
+		        if (r,c) in self.mine_coords:
+		            neighboring_mines += 1
+		self.state[coord] = neighboring_mines
+
+		if neighboring_mines == 0:
+			for r in range(coord[0]-1, coord[0]+2):
+				for c in range(coord[1]-1, coord[1]+2):
+					if r != coord[0] or c != coord[1]:
+						if 0<=r<self.rows and 0<=c<self.cols and self.state[(r,c)] == -1:
+							self.scanCoord((r,c))
 
 	def step(self, coord ):
 		done = False
@@ -59,13 +71,7 @@ class Minesweeper(gym.Env):
 		    self.clickedCoords.add(coord)
 		    done = True
 		else:
-		    self.neighboring_mines = 0
-		    for r in range(coord[0]-1, coord[0]+1):
-		        for c in range(coord[1]-1, coord[1]+1):
-		            if (r,c) in self.mine_coords:
-		                self.neighboring_mines += 1
-		    self.state[coord] = self.neighboring_mines
-		    self.neighboring_mines = 0
+		    self.scanCoord(coord)
 		    self.coords_to_clear -= 1
 		    if self.coords_to_clear == 0:
 		        self.reward += 500     # Yay you won.
@@ -86,7 +92,7 @@ class Minesweeper(gym.Env):
 		    if (r, c) not in self.mine_coords:  # new coord
 		        self.mine_coords.add((r, c))
 		        mines_to_place -= 1
-		print("SECRET locations:", self.mine_coords)
+		print("MINE locations:", self.mine_coords)
 		self.state = np.full([self.rows, self.cols], Minesweeper.UNKNOWN)
 		self.coords_to_clear = self.rows * self.cols - self.mines
 		self.reward = 0
