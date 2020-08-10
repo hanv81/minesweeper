@@ -94,20 +94,22 @@ class Minesweeper(gym.Env):
 
 	def render(self):
 		for x in range(self.rows):
-		    sys.stdout.write(self.letter_Axis[x])
-		    for y in range(self.cols):
-		        if self.state[x][y] == Minesweeper.MINE:
-		            sys.stdout.write(' x')
-		        elif self.state[x][y] == -1:
-		            sys.stdout.write(' .')
-		        elif self.state[x][y] != -1:
-		            sys.stdout.write(' %s' % int(self.state[x][y]))
-		        if y != self.cols-1:
-		            sys.stdout.write(' ')
-		            if y == (self.cols - 1):
-		                sys.stdout.write('\n')
-		    sys.stdout.write('\n')
+			sys.stdout.write(self.letter_Axis[x])
+			for y in range(self.cols):
+				if self.state[x][y] == Minesweeper.MINE:
+					sys.stdout.write(' x')
+				elif self.state[x][y] == -1:
+					sys.stdout.write(' .')
+				elif self.state[x][y] == 0:
+					sys.stdout.write('  ')
+				else:
+					sys.stdout.write(' %s' % int(self.state[x][y]))
+				if y != self.cols-1:
+					sys.stdout.write(' ')
+					if y == (self.cols - 1):
+						sys.stdout.write('\n')
+			sys.stdout.write('\n')
 		sys.stdout.write(' ')
 		for k in range(self.cols):
-		    sys.stdout.write(' %s ' % k)
+			sys.stdout.write(' %s ' % k)
 		print ("")
