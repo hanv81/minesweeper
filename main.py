@@ -46,7 +46,7 @@ def train():
                     max_avg = avg
                 x.append(episode+1)
                 y.append(avg)
-                print("episode %d %d"%(episode+1, point))
+                print("episode %d %d %1.2f"%(episode+1, point, avg))
                 break
 
         epsilon *= EPSILON_DECAY
