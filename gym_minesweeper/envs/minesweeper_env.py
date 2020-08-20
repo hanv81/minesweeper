@@ -85,7 +85,7 @@ class Minesweeper(gym.Env):
 		    if (r, c) not in self.mine_coords:  # new coord
 		        self.mine_coords.add((r, c))
 		        mines_to_place -= 1
-		print("MINE locations:", self.mine_coords)
+		# print("MINE locations:", self.mine_coords)
 		self.state = np.full([self.rows, self.cols], Minesweeper.UNKNOWN)
 		self.coords_to_clear = self.rows * self.cols - self.mines
 		self.clickedCoords = set()
