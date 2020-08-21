@@ -38,6 +38,7 @@ def train():
             point += reward
             agent.update(state, action, reward, next_state, done)
             if done:
+                agent.update_critic()
                 if point > max_point:
                     max_point = point
                 total_point += point

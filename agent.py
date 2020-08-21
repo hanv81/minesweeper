@@ -31,6 +31,11 @@ class Agent:
   def get_q(self, state):
     return self.actor.predict(np.array(state[None, ...]))
 
+  def update_critic(self):
+    self.critic_update_counter += 1
+    if self.critic_update_counter % UPDATE_CRITIC_EVERY == 0:
+      self.critic.set_weights(self.actor.get_weights())
+
   def update(self, state, action, reward, next_state, done):
     self.replay_memory.append((state, action, reward, next_state, done))
     if len(self.replay_memory) < MIN_REPLAY_MEMORY_SIZE:
@@ -56,7 +61,3 @@ class Agent:
       y.append(current_qs)
 
     self.actor.fit(np.array(X), np.array(y), batch_size=MINIBATCH_SIZE, verbose=0)
-    if done:
-      self.critic_update_counter += 1
-      if self.critic_update_counter % UPDATE_CRITIC_EVERY == 0:
-        self.critic.set_weights(self.actor.get_weights())
