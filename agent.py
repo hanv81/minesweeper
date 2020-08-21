@@ -59,5 +59,5 @@ class Agent:
     self.actor.fit(np.array(X), np.array(y), batch_size=MINIBATCH_SIZE, verbose=0)
     if done:
       self.critic_update_counter += 1
-      if self.critic_update_counter == UPDATE_CRITIC_EVERY:
+      if self.critic_update_counter % UPDATE_CRITIC_EVERY == 0:
         self.critic.set_weights(self.actor.get_weights())
