@@ -8,7 +8,8 @@ REPLAY_MEMORY_SIZE = 50000
 MIN_REPLAY_MEMORY_SIZE = 1000
 MINIBATCH_SIZE = 64
 UPDATE_CRITIC_EVERY = 5
-DISCOUNT = 0.9
+GAMMA = 0.9
+ALPHA = 0.1
 
 class Agent:
   def create_model(self, rows, cols):
@@ -45,12 +46,10 @@ class Agent:
     y = []
 
     for index, (current_state, action, reward, next_current_state, done) in enumerate(batch):
-      new_q = reward
-      if not done:
-        max_next_q = np.max(next_qs_list[index])
-        new_q += DISCOUNT * max_next_q
-
       current_qs = current_qs_list[index]
+      old_q = current_qs[action]
+      max_next_q = np.max(next_qs_list[index])
+      new_q = old_q + ALPHA * (reward + GAMMA * max_next_q - old_q)
       current_qs[action] = new_q
 
       X.append(current_state)
