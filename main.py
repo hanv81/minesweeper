@@ -26,7 +26,8 @@ def train():
     for episode in range(EPISODES):
         state = env.reset()
         point = 0
-        while True:
+        done = False
+        while not done:
             if np.random.random() > epsilon:
                 action = np.argmax(agent.get_q(state))
                 r = action // COLS
@@ -34,31 +35,26 @@ def train():
             else:
                 (r,c) = env.action_space.sample()
                 action = r*COLS + c
-            (next_state, reward, done, info) = env.step((r,c))
+            next_state, reward, done = env.step((r,c))
             point += reward
             agent.update_replay_memory((state, action, reward, next_state, done))
             agent.train()
-            if done:
-                agent.update_critic()
-                if point > max_point:
-                    max_point = point
-                total_point += point
-                avg = total_point/(episode+1)
-                if avg > max_avg:
-                    max_avg = avg
-                x.append(episode+1)
-                y.append(avg)
-                print("episode %d %d %1.2f"%(episode+1, point, avg))
-                break
+
+        agent.update_critic()
+        if point > max_point:
+            max_point = point
+        total_point += point
+        avg = total_point/(episode+1)
+        if avg > max_avg:
+            max_avg = avg
+        x.append(episode+1)
+        y.append(avg)
+        print("episode %d %d %1.2f"%(episode+1, point, avg))
 
         epsilon *= EPSILON_DECAY
         epsilon = max(MIN_EPSILON, epsilon)
-    plt.figure(figsize=(10,5))
-    plt.scatter(x, y)
-    plt.xlabel('Episode')
-    plt.ylabel('Point')
-    plt.title('Train')
-    plt.show()
+
+    plot(x, y, 'Train', 'train.png')
     return max_point, avg, max_avg
 
 def play_random():
@@ -70,28 +66,32 @@ def play_random():
     for episode in range(EPISODES):
         state = env.reset()
         point = 0
-        while True:
+        done = False
+        while not done:
             action = env.action_space.sample()
-            (next_state, reward, done, info) = env.step(action)
+            next_state, reward, done = env.step(action)
             point += reward
-            if done:
-                if point > max:
-                    max = point
-                total_point += point
-                avg = total_point/(episode+1)
-                if avg > max_avg:
-                    max_avg = avg
-                x.append(episode+1)
-                y.append(avg)
-                print("episode %d %d"%(episode+1, point))
-                break
+
+        if point > max:
+            max = point
+        total_point += point
+        avg = total_point/(episode+1)
+        if avg > max_avg:
+            max_avg = avg
+        x.append(episode+1)
+        y.append(avg)
+        print("episode %d %d"%(episode+1, point))
+
+    plot(x, y, 'Random', 'random.png')
+    return max, avg, max_avg
+
+def plot(x, y, title, filename):
     plt.figure(figsize=(10,5))
     plt.scatter(x, y)
     plt.xlabel('Episode')
     plt.ylabel('Point')
-    plt.title('Random')
-    plt.show()
-    return max, avg, max_avg
+    plt.title(title)
+    plt.savefig(filename)
 
 def main():
     max1, avg1, max_avg1 = play_random()

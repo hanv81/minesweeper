@@ -55,16 +55,12 @@ class Minesweeper(gym.Env):
 		done = False
 		reward = 0
 		self.coord = coord
-		if coord in self.clickedCoords:
-		    reward -=  1
-
-		elif coord in self.mine_coords:
-		    # Clicked on a mine!
+		if coord in self.mine_coords:
 		    self.state[coord] = Minesweeper.MINE
 		    self.clickedCoords.add(coord)
 		    done = True
-		else:
-			reward += 1
+		elif coord not in self.clickedCoords:
+			reward = 1
 			self.scanCoord(coord)
 			self.coords_to_clear -= 1
 			if self.coords_to_clear == 0:
@@ -73,7 +69,7 @@ class Minesweeper(gym.Env):
 			else:
 				self.clickedCoords.add(coord)
 
-		return (self.state, reward, done, self.info)
+		return self.state, reward, done
 
 	def reset(self):
 		# Internal state: where are all the mines?

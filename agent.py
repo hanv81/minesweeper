@@ -6,7 +6,7 @@ import numpy as np
 
 REPLAY_MEMORY_SIZE = 50000
 MIN_REPLAY_MEMORY_SIZE = 1000
-MINIBATCH_SIZE = 64
+BATCH_SIZE = 64
 UPDATE_CRITIC_EVERY = 5
 GAMMA = 0.9
 ALPHA = 0.1
@@ -42,23 +42,23 @@ class Agent:
   def train(self):
     if len(self.replay_memory) < MIN_REPLAY_MEMORY_SIZE:
       return
-    batch = random.sample(self.replay_memory, MINIBATCH_SIZE)
+    batch = random.sample(self.replay_memory, BATCH_SIZE)
     states = np.array([transition[0] for transition in batch])
     qs_list = self.actor.predict(states)
 
     next_states = np.array([transition[3] for transition in batch])
-    next_qs_list = self.critic.predict(next_states)
+    next_qs = self.actor.predict(next_states)
 
     X = []
     y = []
 
     for index, (state, action, reward, next_state, done) in enumerate(batch):
       qs = qs_list[index]
-      old_q = qs[action]
-      max_next_q = np.max(next_qs_list[index])
-      qs[action] = old_q + ALPHA * (reward + GAMMA * max_next_q - old_q)
+      qs[action] = reward
+      if not done:
+        qs[action] += GAMMA * np.max(next_qs[index])
 
       X.append(state)
       y.append(qs)
 
-    self.actor.fit(np.array(X), np.array(y), batch_size=MINIBATCH_SIZE, verbose=0)
+    self.actor.fit(np.array(X), np.array(y), batch_size=BATCH_SIZE, verbose=0)
