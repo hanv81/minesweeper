@@ -36,13 +36,15 @@ class Agent:
     if self.critic_update_counter % UPDATE_CRITIC_EVERY == 0:
       self.critic.set_weights(self.actor.get_weights())
 
-  def update(self, state, action, reward, next_state, done):
-    self.replay_memory.append((state, action, reward, next_state, done))
+  def update_replay_memory(self, transition):
+    self.replay_memory.append(transition)
+
+  def train(self):
     if len(self.replay_memory) < MIN_REPLAY_MEMORY_SIZE:
       return
     batch = random.sample(self.replay_memory, MINIBATCH_SIZE)
     states = np.array([transition[0] for transition in batch])
-    current_qs_list = self.actor.predict(states)
+    qs_list = self.actor.predict(states)
 
     next_states = np.array([transition[3] for transition in batch])
     next_qs_list = self.critic.predict(next_states)
@@ -50,14 +52,13 @@ class Agent:
     X = []
     y = []
 
-    for index, (current_state, action, reward, next_current_state, done) in enumerate(batch):
-      current_qs = current_qs_list[index]
-      old_q = current_qs[action]
+    for index, (state, action, reward, next_state, done) in enumerate(batch):
+      qs = qs_list[index]
+      old_q = qs[action]
       max_next_q = np.max(next_qs_list[index])
-      new_q = old_q + ALPHA * (reward + GAMMA * max_next_q - old_q)
-      current_qs[action] = new_q
+      qs[action] = old_q + ALPHA * (reward + GAMMA * max_next_q - old_q)
 
-      X.append(current_state)
-      y.append(current_qs)
+      X.append(state)
+      y.append(qs)
 
     self.actor.fit(np.array(X), np.array(y), batch_size=MINIBATCH_SIZE, verbose=0)

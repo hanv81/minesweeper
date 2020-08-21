@@ -36,7 +36,8 @@ def train():
                 action = r*COLS + c
             (next_state, reward, done, info) = env.step((r,c))
             point += reward
-            agent.update(state, action, reward, next_state, done)
+            agent.update_replay_memory((state, action, reward, next_state, done))
+            agent.train()
             if done:
                 agent.update_critic()
                 if point > max_point:
