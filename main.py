@@ -1,7 +1,8 @@
 import gym
 import gym_minesweeper
-from agent import *
+from agent import Agent
 import numpy as np
+import random
 import matplotlib.pyplot as plt
 
 ROWS = 10
@@ -36,14 +37,18 @@ def train():
                 action = random.sample(cells_to_click, 1)[0]
             r = action // COLS
             c = action % COLS
-            clicked_cells.append(action)
-            cells_to_click.remove(action)
             next_state, reward, done = env.step((r,c))
-            point += reward
             agent.update_replay_memory((state, action, reward, next_state, done))
             agent.train()
-
-        agent.update_critic()
+            if reward > 0:
+                point += reward
+                for action in cells_to_click:
+                    r = action // COLS
+                    c = action % COLS
+                    if next_state[r,c] >= 0:
+                        cells_to_click.remove(action)
+                        clicked_cells.append(action)
+            state = next_state
 
         p.append(point)
         avg = sum(p)/(episode+1)
@@ -62,7 +67,7 @@ def play_random():
     y = []
     p = []
     for episode in range(EPISODES):
-        state = env.reset()
+        env.reset()
         point = 0
         done = False
         cells_to_click = [x for x in range(0, ROWS * COLS)]
@@ -71,8 +76,13 @@ def play_random():
             r = action // COLS
             c = action % COLS
             next_state, reward, done = env.step((r,c))
-            cells_to_click.remove(action)
-            point += reward
+            if reward > 0:
+                point += reward
+                for action in cells_to_click:
+                    r = action // COLS
+                    c = action % COLS
+                    if next_state[r,c] >= 0:
+                        cells_to_click.remove(action)
 
         p.append(point)
         avg = sum(p)/(episode+1)
@@ -85,13 +95,13 @@ def play_random():
 
 def plot(random_p, random_avg, train_p, train_avg):
     x = [xi for xi in range(1, EPISODES+1)]
+    text = 'Max random ' + str(max(random_p)) + '\nMax train ' + str(max(train_p)) + '\nAvg random ' + str(random_avg[-1]) + '\nAvg train ' + str(train_avg[-1])
     plt.figure(figsize=(15,10))
     plt.xlabel('Episode')
     plt.ylabel('Point')
     plt.plot(x, random_avg)
     plt.plot(x, train_avg)
-    text = 'Max random ' + str(max(random_p)) + '\nMax train ' + str(max(train_p)) + '\nAvg random ' + str(random_avg[-1]) + '\nAvg train ' + str(train_avg[-1])
-    plt.text(1, 10, text)
+    plt.text(EPISODES/2, 1, text)
     plt.legend(['Random','Train'])
     plt.title('Average Point')
     plt.savefig('minesweeper')
@@ -99,8 +109,9 @@ def plot(random_p, random_avg, train_p, train_avg):
 def main():
     p1, avg1 = play_random()
     p2, avg2 = train()
-    print('Random %d %1.2f %1.2f'%( max(p1), avg1[-1], max(avg1)))
-    print('Train %d %1.2f %1.2f'%( max(p2), avg2[-1], max(avg2)))
+    print('------------------ SUMMARY ------------------')
+    print('RANDOM: max %d avg %1.2f max_avg %1.2f'%( max(p1), avg1[-1], max(avg1)))
+    print('TRAIN:  max %d avg %1.2f max_avg %1.2f'%( max(p2), avg2[-1], max(avg2)))
     plot(p1, avg1, p2, avg2)
 
 if __name__ == "__main__":
