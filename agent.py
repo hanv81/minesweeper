@@ -1,5 +1,6 @@
 from tensorflow.keras.models import Model
 from tensorflow.keras.layers import *
+from tensorflow import keras
 from collections import deque
 import random
 import numpy as np
@@ -21,6 +22,12 @@ class Agent:
     model.compile(loss='mse', optimizer='adam', metrics='accuracy')
     model.summary()
     return model
+
+  def save_model(self):
+    self.actor.save('model.h5')
+
+  def load_model(self):
+    self.actor = keras.models.load_model('model.h5')
 
   def __init__(self, rows, cols):
     self.actor = self.create_model(rows, cols)

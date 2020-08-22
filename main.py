@@ -55,6 +55,7 @@ def train():
         epsilon *= EPSILON_DECAY
         epsilon = max(MIN_EPSILON, epsilon)
 
+    agent.save_model()
     return p, y
 
 def play_random():
