@@ -27,14 +27,19 @@ def train():
         state = env.reset()
         point = 0
         done = False
+        clicked_cells = []
         while not done:
             if np.random.random() > epsilon:
-                action = np.argmax(agent.get_q(state))
+                qs = agent.get_q(state)
+                for cell in clicked_cells:
+                    qs[0, cell] = np.min(qs)
+                action = np.argmax(qs)
                 r = action // COLS
                 c = action % COLS
             else:
                 (r,c) = env.action_space.sample()
                 action = r*COLS + c
+            clicked_cells.append(action)
             next_state, reward, done = env.step((r,c))
             point += reward
             agent.update_replay_memory((state, action, reward, next_state, done))
@@ -49,7 +54,8 @@ def train():
             max_avg = avg
         x.append(episode+1)
         y.append(avg)
-        print("episode %d %d %1.2f"%(episode+1, point, avg))
+        if (episode + 1) % 10 == 0:
+            print("episode %d %d %1.2f"%(episode+1, point, avg))
 
         epsilon *= EPSILON_DECAY
         epsilon = max(MIN_EPSILON, epsilon)
@@ -80,7 +86,8 @@ def play_random():
             max_avg = avg
         x.append(episode+1)
         y.append(avg)
-        print("episode %d %d"%(episode+1, point))
+        if (episode + 1) % 100 == 0:
+            print("episode %d %d"%(episode+1, point))
 
     plot(x, y, 'Random', 'random.png')
     return max, avg, max_avg
