@@ -8,7 +8,6 @@ import numpy as np
 REPLAY_MEMORY_SIZE = 50000
 MIN_REPLAY_MEMORY_SIZE = 1000
 BATCH_SIZE = 64
-UPDATE_CRITIC_EVERY = 5
 GAMMA = 0.9
 ALPHA = 0.1
 
@@ -31,17 +30,10 @@ class Agent:
 
   def __init__(self, rows, cols):
     self.actor = self.create_model(rows, cols)
-    self.critic = self.create_model(rows, cols)
     self.replay_memory = deque(maxlen=REPLAY_MEMORY_SIZE)
-    self.critic_update_counter = 0
 
   def get_q(self, state):
     return self.actor.predict(np.array(state[None, ...]))
-
-  def update_critic(self):
-    self.critic_update_counter += 1
-    if self.critic_update_counter % UPDATE_CRITIC_EVERY == 0:
-      self.critic.set_weights(self.actor.get_weights())
 
   def update_replay_memory(self, transition):
     self.replay_memory.append(transition)
