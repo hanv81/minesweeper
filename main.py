@@ -29,9 +29,9 @@ def train():
         cells_to_click = [x for x in range(0, ROWS * COLS)]
         while not done:
             if np.random.random() > epsilon:
-                qs = agent.get_q(state)
+                qs = agent.predict(state)[0]
                 for cell in clicked_cells:
-                    qs[0, cell] = np.min(qs)
+                    qs[cell] = np.min(qs)
                 action = np.argmax(qs)
             else:
                 action = random.sample(cells_to_click, 1)[0]

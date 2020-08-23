@@ -23,17 +23,17 @@ class Agent:
     return model
 
   def save_model(self):
-    self.actor.save('model.h5')
+    self.model.save('model.h5')
 
   def load_model(self):
-    self.actor = keras.models.load_model('model.h5')
+    self.model = keras.models.load_model('model.h5')
 
   def __init__(self, rows, cols):
-    self.actor = self.create_model(rows, cols)
+    self.model = self.create_model(rows, cols)
     self.replay_memory = deque(maxlen=REPLAY_MEMORY_SIZE)
 
-  def get_q(self, state):
-    return self.actor.predict(np.array(state[None, ...]))
+  def predict(self, state):
+    return self.model.predict(np.array(state[None, ...]))
 
   def update_replay_memory(self, transition):
     self.replay_memory.append(transition)
@@ -43,10 +43,10 @@ class Agent:
       return
     batch = random.sample(self.replay_memory, BATCH_SIZE)
     states = np.array([transition[0] for transition in batch])
-    qs_list = self.actor.predict(states)
+    qs_list = self.model.predict(states)
 
     next_states = np.array([transition[3] for transition in batch])
-    next_qs = self.actor.predict(next_states)
+    next_qs = self.model.predict(next_states)
 
     X = []
     y = []
@@ -60,4 +60,4 @@ class Agent:
       X.append(state)
       y.append(qs)
 
-    self.actor.fit(np.array(X), np.array(y), batch_size=BATCH_SIZE, verbose=0)
+    self.model.fit(np.array(X), np.array(y), batch_size=BATCH_SIZE, verbose=0)
