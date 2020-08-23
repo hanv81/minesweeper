@@ -8,8 +8,7 @@ import numpy as np
 REPLAY_MEMORY_SIZE = 50000
 MIN_REPLAY_MEMORY_SIZE = 1000
 BATCH_SIZE = 64
-GAMMA = 0.9
-ALPHA = 0.1
+GAMMA = 0.99
 
 class Agent:
   def create_model(self, rows, cols):
