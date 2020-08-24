@@ -157,19 +157,20 @@ def open_game(lst, square):
                 open_game(lst, lst[i][j+1])
     
 def game(rows, cols, bombs):
-    grey = pygame.image.load('grey.png')
-    white = pygame.image.load('0.png')
-    zero = pygame.image.load('0.png')
-    one = pygame.image.load('1.png')
-    two = pygame.image.load('2.png')
-    three = pygame.image.load('3.png')
-    four = pygame.image.load('4.png')
-    five = pygame.image.load('5.png')
-    six = pygame.image.load('6.png')
-    seven = pygame.image.load('7.png')
-    eight = pygame.image.load('8.png')
-    nine = pygame.image.load('9.png')
-    flag = pygame.image.load('flag.png')
+    path = './minesweeper/minesweeper-game/image/'
+    grey = pygame.image.load(path + 'grey.png')
+    white = pygame.image.load(path + '0.png')
+    zero = pygame.image.load(path + '0.png')
+    one = pygame.image.load(path + '1.png')
+    two = pygame.image.load(path + '2.png')
+    three = pygame.image.load(path + '3.png')
+    four = pygame.image.load(path + '4.png')
+    five = pygame.image.load(path + '5.png')
+    six = pygame.image.load(path + '6.png')
+    seven = pygame.image.load(path + '7.png')
+    eight = pygame.image.load(path + '8.png')
+    nine = pygame.image.load(path + 'bomb.png')
+    flag = pygame.image.load(path + 'flag.png')
 
     numbers = [zero, one, two, three, four, five, six, seven, eight, nine]
 
