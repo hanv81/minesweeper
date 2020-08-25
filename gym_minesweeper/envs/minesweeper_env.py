@@ -33,7 +33,7 @@ class Minesweeper(gym.Env):
 		return xy
 
 	def scanCoord(self, coord):
-		list = []
+		cells = [coord]
 		neighboring_mines = 0
 		for r in range(coord[0]-1, coord[0]+2):
 		    for c in range(coord[1]-1, coord[1]+2):
@@ -45,20 +45,22 @@ class Minesweeper(gym.Env):
 			for r in range(coord[0]-1, coord[0]+2):
 				for c in range(coord[1]-1, coord[1]+2):
 					if r != coord[0] or c != coord[1]:
-						if 0<=r<self.rows and 0<=c<self.cols and self.state[(r,c)] == -1:
-							self.scanCoord((r,c))
+						if 0<=r<self.rows and 0<=c<self.cols and self.state[r,c] == -1:
+							cells.extend(self.scanCoord((r,c)))
+		return cells
 
 	def step(self, coord):
 		done = False
 		reward = 0
 		self.coord = coord
+		info = []
 		if coord in self.mine_coords:
 		    self.state[coord] = Minesweeper.MINE
 		    self.clickedCoords.add(coord)
 		    done = True
 		elif coord not in self.clickedCoords:
 			reward = 1
-			self.scanCoord(coord)
+			info = self.scanCoord(coord)
 			self.coords_to_clear -= 1
 			if self.coords_to_clear == 0:
 				# Win !!!
@@ -66,7 +68,7 @@ class Minesweeper(gym.Env):
 			else:
 				self.clickedCoords.add(coord)
 
-		return self.state, reward, done
+		return np.copy(self.state), reward, done, info
 
 	def reset(self):
 		# Internal state: where are all the mines?
@@ -82,20 +84,20 @@ class Minesweeper(gym.Env):
 		self.state = np.full([self.rows, self.cols], Minesweeper.UNKNOWN)
 		self.coords_to_clear = self.rows * self.cols - self.mines
 		self.clickedCoords = set()
-		return self.state
+		return np.copy(self.state)
 
 	def render(self):
 		for x in range(self.rows):
 			sys.stdout.write(self.letter_Axis[x])
 			for y in range(self.cols):
-				if self.state[x][y] == Minesweeper.MINE:
+				if self.state[x,y] == Minesweeper.MINE:
 					sys.stdout.write(' x')
-				elif self.state[x][y] == -1:
+				elif self.state[x,y] == -1:
 					sys.stdout.write(' .')
-				elif self.state[x][y] == 0:
+				elif self.state[x,y] == 0:
 					sys.stdout.write('  ')
 				else:
-					sys.stdout.write(' %s' % int(self.state[x][y]))
+					sys.stdout.write(' %s' % int(self.state[x,y]))
 				if y != self.cols-1:
 					sys.stdout.write(' ')
 					if y == (self.cols - 1):

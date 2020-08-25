@@ -38,19 +38,15 @@ def train():
 
             r = action // COLS
             c = action % COLS
-            next_state, reward, done = env.step((r,c))
+            next_state, reward, done, info = env.step((r,c))
             agent.update_replay_memory((state, action, reward, next_state, done))
             agent.train()
             if reward > 0:
                 point += reward
-                for action in cells_to_click:
-                    r = action // COLS
-                    c = action % COLS
-                    if next_state[r,c] >= 0:
-                        clicked_cells.append(action)
-                for action in clicked_cells:
-                    if action in cells_to_click:
-                        cells_to_click.remove(action)
+                for (r,c) in info:
+                    action = r * COLS + c
+                    clicked_cells.append(action)
+                    cells_to_click.remove(action)
             state = next_state
 
         p.append(point)
@@ -78,14 +74,12 @@ def play_random():
             action = random.sample(cells_to_click, 1)[0]
             r = action // COLS
             c = action % COLS
-            next_state, reward, done = env.step((r,c))
+            next_state, reward, done, info = env.step((r,c))
             if reward > 0:
                 point += reward
-                for action in cells_to_click:
-                    r = action // COLS
-                    c = action % COLS
-                    if next_state[r,c] >= 0:
-                        cells_to_click.remove(action)
+                for (r,c) in info:
+                    action = r * COLS + c
+                    cells_to_click.remove(action)
 
         p.append(point)
         avg = sum(p)/(episode+1)
