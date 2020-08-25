@@ -28,7 +28,7 @@ def train():
         clicked_cells = []
         cells_to_click = [x for x in range(0, ROWS * COLS)]
         while not done:
-            if np.random.random() <= epsilon or point == 0: # first cell -> just random
+            if random.random() <= epsilon or point == 0: # first cell -> just random
                 action = random.sample(cells_to_click, 1)[0]
             else:
                 qs = agent.predict(state)[0]
@@ -47,8 +47,10 @@ def train():
                     r = action // COLS
                     c = action % COLS
                     if next_state[r,c] >= 0:
-                        cells_to_click.remove(action)
                         clicked_cells.append(action)
+                for action in clicked_cells:
+                    if action in cells_to_click:
+                        cells_to_click.remove(action)
             state = next_state
 
         p.append(point)
