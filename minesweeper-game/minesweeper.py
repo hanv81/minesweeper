@@ -207,10 +207,10 @@ def game(rows, cols, bombs):
             for j in i:
                 if j.visible and j.val != MINE:
                     cnt += 1
-            if cnt == rows * cols - bombs:
-                run = False
-                win = True
-                print('WIN')
+        if cnt == rows * cols - bombs:
+            run = False
+            win = True
+            print('WIN')
         pygame.display.update()
 
     if win:
