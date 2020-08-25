@@ -155,24 +155,28 @@ def open_game(lst, square):
             lst[i][j+1].visible = True
             if lst[i][j+1].val == 0:
                 open_game(lst, lst[i][j+1])
-    
-def game(rows, cols, bombs):
-    path = './minesweeper/minesweeper-game/image/'
-    grey = pygame.image.load(path + 'grey.png')
-    white = pygame.image.load(path + '0.png')
-    zero = pygame.image.load(path + '0.png')
-    one = pygame.image.load(path + '1.png')
-    two = pygame.image.load(path + '2.png')
-    three = pygame.image.load(path + '3.png')
-    four = pygame.image.load(path + '4.png')
-    five = pygame.image.load(path + '5.png')
-    six = pygame.image.load(path + '6.png')
-    seven = pygame.image.load(path + '7.png')
-    eight = pygame.image.load(path + '8.png')
-    nine = pygame.image.load(path + 'bomb.png')
-    flag = pygame.image.load(path + 'flag.png')
 
-    numbers = [zero, one, two, three, four, five, six, seven, eight, nine]
+path = './minesweeper/minesweeper-game/image/'
+grey = pygame.image.load(path + 'grey.png')
+white = pygame.image.load(path + '0.png')
+zero = pygame.image.load(path + '0.png')
+one = pygame.image.load(path + '1.png')
+two = pygame.image.load(path + '2.png')
+three = pygame.image.load(path + '3.png')
+four = pygame.image.load(path + '4.png')
+five = pygame.image.load(path + '5.png')
+six = pygame.image.load(path + '6.png')
+seven = pygame.image.load(path + '7.png')
+eight = pygame.image.load(path + '8.png')
+nine = pygame.image.load(path + 'bomb.png')
+flag = pygame.image.load(path + 'flag.png')
+boom = pygame.image.load(path + 'boom.png')
+glasses = pygame.image.load(path + 'sun-glasses.png')
+sad = pygame.image.load(path + 'sun-sad.png')
+numbers = [zero, one, two, three, four, five, six, seven, eight, nine]
+
+def game(rows, cols, bombs):
+    
 
     c = Board(mine(rows, cols, bombs))
 
@@ -187,6 +191,8 @@ def game(rows, cols, bombs):
             screen.blit(grey, (i,j))
 
     run = True
+    win = False
+    boom_cell = None
     while run:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -195,6 +201,9 @@ def game(rows, cols, bombs):
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_r:
                     restart(rows, cols, bombs)
+                elif event.key == pygame.K_ESCAPE:
+                    run = False
+                    pygame.quit()
             elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                 for i in lst:
                     for j in i:
@@ -203,10 +212,11 @@ def game(rows, cols, bombs):
                             if not j.flag:
                                 if j.val == BOMBS:
                                     print('BOMBS')
+                                    boom_cell = j
                                     run = False
                                 j.visible = True
                                 if j.val == 0:
-                                    j.visible = open_game(lst, j)
+                                    open_game(lst, j)
                                     j.visible = True
             elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 3:
                 for i in lst:
@@ -232,13 +242,21 @@ def game(rows, cols, bombs):
                     cnt += 1
             if cnt == rows * cols - bombs:
                 run = False
+                win = True
                 print('WIN')
         pygame.display.update()
 
-    for i in lst:
-        for j in i:
-            if j.val == BOMBS:
-                screen.blit(nine, (j.x, j.y))
+    if win:
+        width, height = glasses.get_rect().size
+        screen.blit(glasses, ((w-width)//2, (h-height)//2))
+    else:
+        for i in lst:
+            for j in i:
+                if j.val == BOMBS:
+                    screen.blit(nine, (j.x, j.y))
+        width, height = sad.get_rect().size
+        screen.blit(boom, (boom_cell.x, boom_cell.y))
+        screen.blit(sad, ((w-width)//2, (h-height)//2))
     pygame.display.update()
 
     run = True
@@ -251,8 +269,12 @@ def game(rows, cols, bombs):
                 if event.key == pygame.K_r:
                     run = False
                     restart(rows, cols, bombs)
-
-print("press 'r' for restart")
+                elif event.key == pygame.K_ESCAPE:
+                    run = False
+                    pygame.quit()
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                run = False
+                restart(rows, cols, bombs)
 rows = 10
 cols = 10
 bombs = 10
