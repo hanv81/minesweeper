@@ -141,7 +141,6 @@ def open_game(lst, square):
 
 PATH = './minesweeper/minesweeper-game/image/'
 GREY = pygame.image.load(PATH + 'grey.png')
-WHITE = pygame.image.load(PATH + '0.png')
 ZERO = pygame.image.load(PATH + '0.png')
 ONE = pygame.image.load(PATH + '1.png')
 TWO = pygame.image.load(PATH + '2.png')
@@ -207,7 +206,6 @@ def game(rows, cols, bombs):
         for i in lst:
             for j in i:
                 if j.visible:
-                    screen.blit(WHITE, (j.x, j.y))
                     screen.blit(NUMBERS[j.val], (j.x, j.y))
                 if j.flag:
                     screen.blit(FLAG, (j.x, j.y))
@@ -225,6 +223,10 @@ def game(rows, cols, bombs):
         pygame.display.update()
 
     if win:
+        for i in lst:
+            for j in i:
+                if not j.visible:
+                    screen.blit(FLAG, (j.x, j.y))
         width, height = GLASSES.get_rect().size
         screen.blit(GLASSES, ((w-width)//2, (h-height)//2))
     else:
