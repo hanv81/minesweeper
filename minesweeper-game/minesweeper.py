@@ -6,15 +6,7 @@ BOMBS = 9
 SIZE = 25
 
 def mine(rows, cols, bombs):
-    table = make_table(rows, cols)
-    table = add_bombs(table, bombs)
-    table = change_table(table)
-    return table
-
-def make_table(rows, cols):
-    return [[0] * cols for i in range(rows)]
-
-def add_bombs(table, bombs):
+    table = [[0] * cols for i in range(rows)]
     for i in range(bombs):
         while True:
             x = randint(0, len(table)-1)
@@ -22,11 +14,8 @@ def add_bombs(table, bombs):
             if table[x][y] != BOMBS:
                 table[x][y] = BOMBS
                 break
-    return table
-
-def change_table(table):
-    for i in range(len(table)):
-        for j in range(len(table[i])):
+    for i in range(rows):
+        for j in range(cols):
             if table[i][j] == BOMBS:
                 table = check_down_left(table, i, j)
                 table = check_down_right(table, i, j)
@@ -85,12 +74,6 @@ def check_right(table, x, y):
         if table[x][y+1] != BOMBS:
             table[x][y+1] += 1
     return table
-
-def pr(table):
-    for i in table:
-        print(i)
-
-# pr(mine(5, 10, 4))
 
 class Board:
     def __init__(self, board):
@@ -156,28 +139,26 @@ def open_game(lst, square):
             if lst[i][j+1].val == 0:
                 open_game(lst, lst[i][j+1])
 
-path = './minesweeper/minesweeper-game/image/'
-grey = pygame.image.load(path + 'grey.png')
-white = pygame.image.load(path + '0.png')
-zero = pygame.image.load(path + '0.png')
-one = pygame.image.load(path + '1.png')
-two = pygame.image.load(path + '2.png')
-three = pygame.image.load(path + '3.png')
-four = pygame.image.load(path + '4.png')
-five = pygame.image.load(path + '5.png')
-six = pygame.image.load(path + '6.png')
-seven = pygame.image.load(path + '7.png')
-eight = pygame.image.load(path + '8.png')
-nine = pygame.image.load(path + 'bomb.png')
-flag = pygame.image.load(path + 'flag.png')
-boom = pygame.image.load(path + 'boom.png')
-glasses = pygame.image.load(path + 'sun-glasses.png')
-sad = pygame.image.load(path + 'sun-sad.png')
-numbers = [zero, one, two, three, four, five, six, seven, eight, nine]
+PATH = './minesweeper/minesweeper-game/image/'
+GREY = pygame.image.load(PATH + 'grey.png')
+WHITE = pygame.image.load(PATH + '0.png')
+ZERO = pygame.image.load(PATH + '0.png')
+ONE = pygame.image.load(PATH + '1.png')
+TWO = pygame.image.load(PATH + '2.png')
+THREE = pygame.image.load(PATH + '3.png')
+FOUR = pygame.image.load(PATH + '4.png')
+FIVE = pygame.image.load(PATH + '5.png')
+SIX = pygame.image.load(PATH + '6.png')
+SEVEN = pygame.image.load(PATH + '7.png')
+EIGHT = pygame.image.load(PATH + '8.png')
+BOMB = pygame.image.load(PATH + 'bomb.png')
+FLAG = pygame.image.load(PATH + 'flag.png')
+BOOM = pygame.image.load(PATH + 'boom.png')
+GLASSES = pygame.image.load(PATH + 'sun-glasses.png')
+SAD = pygame.image.load(PATH + 'sun-sad.png')
+NUMBERS = [ZERO, ONE, TWO, THREE, FOUR, FIVE, SIX, SEVEN, EIGHT, BOMB]
 
 def game(rows, cols, bombs):
-    
-
     c = Board(mine(rows, cols, bombs))
 
     w = cols * SIZE
@@ -188,7 +169,7 @@ def game(rows, cols, bombs):
     for i in range(0, rows * SIZE, SIZE):
         for j in range(0, cols * SIZE, SIZE):
             lst[i//SIZE] += [Square(i, j, SIZE, SIZE, c.board, (i//SIZE, j//SIZE))]
-            screen.blit(grey, (i,j))
+            screen.blit(GREY, (i,j))
 
     run = True
     win = False
@@ -204,37 +185,34 @@ def game(rows, cols, bombs):
                 elif event.key == pygame.K_ESCAPE:
                     run = False
                     pygame.quit()
-            elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                r = pygame.rect.Rect(pygame.mouse.get_pos(), (1,1))
                 for i in lst:
                     for j in i:
-                        r = pygame.rect.Rect(pygame.mouse.get_pos(), (1,1))
                         if j.rect.colliderect(r):
-                            if not j.flag:
-                                if j.val == BOMBS:
-                                    print('BOMBS')
-                                    boom_cell = j
-                                    run = False
-                                j.visible = True
-                                if j.val == 0:
-                                    open_game(lst, j)
+                            if event.button == 1:   # LEFT CLICK
+                                if not j.flag:
+                                    if j.val == BOMBS:
+                                        print('BOMBS')
+                                        boom_cell = j
+                                        run = False
                                     j.visible = True
-            elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 3:
-                for i in lst:
-                    for j in i:
-                        r = pygame.rect.Rect(pygame.mouse.get_pos(), (1,1))
-                        if j.rect.colliderect(r):
-                            if not j.visible:
-                                j.flag = not j.flag
-        
+                                    if j.val == 0:
+                                        open_game(lst, j)
+                                        j.visible = True
+                            elif event.button == 3: # RIGHT CLICK
+                                if not j.visible:
+                                    j.flag = not j.flag
+
         for i in lst:
             for j in i:
                 if j.visible:
-                    screen.blit(white, (j.x, j.y))
-                    screen.blit(numbers[j.val], (j.x, j.y))
+                    screen.blit(WHITE, (j.x, j.y))
+                    screen.blit(NUMBERS[j.val], (j.x, j.y))
                 if j.flag:
-                    screen.blit(flag, (j.x, j.y))
+                    screen.blit(FLAG, (j.x, j.y))
                 if not j.flag and not j.visible:
-                    screen.blit(grey, (j.x, j.y))
+                    screen.blit(GREY, (j.x, j.y))
         cnt = 0
         for i in lst:
             for j in i:
@@ -247,16 +225,16 @@ def game(rows, cols, bombs):
         pygame.display.update()
 
     if win:
-        width, height = glasses.get_rect().size
-        screen.blit(glasses, ((w-width)//2, (h-height)//2))
+        width, height = GLASSES.get_rect().size
+        screen.blit(GLASSES, ((w-width)//2, (h-height)//2))
     else:
         for i in lst:
             for j in i:
                 if j.val == BOMBS:
-                    screen.blit(nine, (j.x, j.y))
-        width, height = sad.get_rect().size
-        screen.blit(boom, (boom_cell.x, boom_cell.y))
-        screen.blit(sad, ((w-width)//2, (h-height)//2))
+                    screen.blit(BOMB, (j.x, j.y))
+        width, height = SAD.get_rect().size
+        screen.blit(BOOM, (boom_cell.x, boom_cell.y))
+        screen.blit(SAD, ((w-width)//2, (h-height)//2))
     pygame.display.update()
 
     run = True
