@@ -28,13 +28,14 @@ def train():
         clicked_cells = []
         cells_to_click = [x for x in range(0, ROWS * COLS)]
         while not done:
-            if np.random.random() > epsilon:
+            if np.random.random() <= epsilon or point == 0: # first cell -> just random
+                action = random.sample(cells_to_click, 1)[0]
+            else:
                 qs = agent.predict(state)[0]
                 for cell in clicked_cells:
                     qs[cell] = np.min(qs)
                 action = np.argmax(qs)
-            else:
-                action = random.sample(cells_to_click, 1)[0]
+
             r = action // COLS
             c = action % COLS
             next_state, reward, done = env.step((r,c))
