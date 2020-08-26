@@ -4,7 +4,7 @@ from agent import Agent
 
 MINE = 9
 SIZE = 25
-PATH = './minesweeper/minesweeper-game/image/'
+PATH = './minesweeper/image/'
 GREY = pygame.image.load(PATH + 'grey.png')
 ZERO = pygame.image.load(PATH + '0.png')
 ONE = pygame.image.load(PATH + '1.png')
