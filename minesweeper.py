@@ -1,6 +1,6 @@
 from random import randint
 import pygame
-pygame.init()
+from agent import Agent
 
 MINE = 9
 SIZE = 25
@@ -149,6 +149,7 @@ def open_square(lst, square):
                 open_square(lst, lst[i][j+1])
 
 def game(rows, cols, bombs):
+    agent = Agent(rows, cols)
     table = create_table(rows, cols, bombs)
 
     w = cols * SIZE
@@ -251,10 +252,8 @@ def game(rows, cols, bombs):
                     pygame.quit()
 
 def main():
-    rows = 10
-    cols = 10
-    bombs = 5
-    game(rows, cols, bombs)
+    game(rows=10, cols=10, bombs=8)
 
 if __name__ == "__main__":
+    pygame.init()
     main()
