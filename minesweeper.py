@@ -167,25 +167,29 @@ def game(rows, cols, bombs, agent):
     win = False
     boom_cell = None
     auto = False
+    point = 0
     while run:
         if auto:    # agent play
             state = []
             clicked = []
-            action = 0
-            for i in lst:
-                row = []
-                for j in i:
-                    if j.visible or j.flag:
-                        row.append(j.val)
-                        clicked.append(action)
-                    else:
-                        row.append(-1)
-                    action += 1
-                state.append(row)
-            qs = agent.predict(np.array(state))[0]
-            for cell in clicked:
-                qs[cell] = np.min(qs)
-            action = np.argmax(qs)
+            action = randint(0, rows * cols - 1)
+            if point > 0:
+                action = 0
+                for i in lst:
+                    row = []
+                    for j in i:
+                        if j.visible or j.flag:
+                            row.append(j.val)
+                            clicked.append(action)
+                        else:
+                            row.append(-1)
+                        action += 1
+                    state.append(row)
+                qs = agent.predict(np.array(state))[0]
+                for cell in clicked:
+                    qs[cell] = np.min(qs)
+                action = np.argmax(qs)
+
             i = action // len(lst[0])
             j = action % len(lst[0])
             square = lst[i][j]
@@ -195,6 +199,8 @@ def game(rows, cols, bombs, agent):
                     print('BOMBS')
                     boom_cell = square
                     run = False
+                else:
+                    point += 1
                 square.visible = True
                 if square.val == 0:
                     open_square(lst, square)
@@ -225,6 +231,8 @@ def game(rows, cols, bombs, agent):
                                             print('BOMBS')
                                             boom_cell = j
                                             run = False
+                                        else:
+                                            point += 1
                                         j.visible = True
                                         if j.val == 0:
                                             open_square(lst, j)
@@ -252,6 +260,7 @@ def game(rows, cols, bombs, agent):
             print('WIN')
         pygame.display.update()
 
+    print('point:', point)
     if win:
         for i in lst:
             for j in i:
