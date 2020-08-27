@@ -23,6 +23,7 @@ BOOM = pygame.image.load(PATH + 'boom.png')
 GLASSES = pygame.image.load(PATH + 'sun-glasses.png')
 SAD = pygame.image.load(PATH + 'sun-sad.png')
 NUMBERS = [ZERO, ONE, TWO, THREE, FOUR, FIVE, SIX, SEVEN, EIGHT, BOMB]
+HEURISTIC = False
 
 def create_table(rows, cols, bombs):
     table = [[0] * cols for i in range(rows)]
@@ -174,6 +175,9 @@ def game(rows, cols, bombs, agent):
             clicked = []
             action = randint(0, rows * cols - 1)
             if point > 0:
+                if HEURISTIC:
+                    lst = heuristic(lst)
+
                 action = 0
                 for i in lst:
                     row = []
@@ -298,38 +302,8 @@ def game(rows, cols, bombs, agent):
                 else:
                     pygame.quit()
 
-def auto_play(agent, lst):
-    run = True
-    state = []
-    clicked = []
-    action = 0
-    for i in lst:
-        row = []
-        for j in i:
-            if j.visible:
-                row.append(j.val)
-                clicked.append(action)
-            else:
-                row.append(-1)
-            action += 1
-        state.append(row)
-    qs = agent.predict(np.array(state))[0]
-    for cell in clicked:
-        qs[cell] = np.min(qs)
-    action = np.argmax(qs)
-    i = action // len(lst[0])
-    j = action % len(lst[0])
-    square = lst[i][j]
-
-    if not square.flag:
-        if square.val == MINE:
-            print('BOMBS')
-            boom_cell = square
-            run = False
-        square.visible = True
-        if square.val == 0:
-            open_square(lst, square)
-    return run
+def heuristic(lst):
+    return lst
 
 def main():
     rows=10
