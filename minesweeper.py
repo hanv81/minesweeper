@@ -1,6 +1,8 @@
 from random import randint
 import pygame
 from agent import Agent
+import numpy as np
+import time
 
 MINE = 9
 SIZE = 25
@@ -101,8 +103,8 @@ class Square:
         self.visible = False
         self.flag = False
 
-def restart(rows, cols, bombs):
-    game(rows, cols, bombs)
+def restart(rows, cols, bombs, agent):
+    game(rows, cols, bombs, agent)
 
 def open_square(lst, square):
     square.visible = True
@@ -148,8 +150,7 @@ def open_square(lst, square):
             if lst[i][j+1].val == 0:
                 open_square(lst, lst[i][j+1])
 
-def game(rows, cols, bombs):
-    agent = Agent(rows, cols)
+def game(rows, cols, bombs, agent):
     table = create_table(rows, cols, bombs)
 
     w = cols * SIZE
@@ -165,35 +166,72 @@ def game(rows, cols, bombs):
     run = True
     win = False
     boom_cell = None
+    auto = False
     while run:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                run = False
-                pygame.quit()
-            elif event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_r:
-                    restart(rows, cols, bombs)
-                elif event.key == pygame.K_ESCAPE:
+        if auto:    # agent play
+            state = []
+            clicked = []
+            action = 0
+            for i in lst:
+                row = []
+                for j in i:
+                    if j.visible or j.flag:
+                        row.append(j.val)
+                        clicked.append(action)
+                    else:
+                        row.append(-1)
+                    action += 1
+                state.append(row)
+            qs = agent.predict(np.array(state))[0]
+            for cell in clicked:
+                qs[cell] = np.min(qs)
+            action = np.argmax(qs)
+            i = action // len(lst[0])
+            j = action % len(lst[0])
+            square = lst[i][j]
+
+            if not square.flag:
+                if square.val == MINE:
+                    print('BOMBS')
+                    boom_cell = square
+                    run = False
+                square.visible = True
+                if square.val == 0:
+                    open_square(lst, square)
+            time.sleep(1)
+
+        else:   # user play
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
                     run = False
                     pygame.quit()
-            elif event.type == pygame.MOUSEBUTTONDOWN:
-                r = pygame.rect.Rect(pygame.mouse.get_pos(), (1,1))
-                for i in lst:
-                    for j in i:
-                        if j.rect.colliderect(r):
-                            if event.button == 1:   # LEFT CLICK
-                                if not j.flag:
-                                    if j.val == MINE:
-                                        print('BOMBS')
-                                        boom_cell = j
-                                        run = False
-                                    j.visible = True
-                                    if j.val == 0:
-                                        open_square(lst, j)
+                elif event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_r:
+                        restart(rows, cols, bombs)
+                    elif event.key == pygame.K_a:
+                        print('auto play')
+                        auto = True
+                    elif event.key == pygame.K_ESCAPE:
+                        run = False
+                        pygame.quit()
+                elif event.type == pygame.MOUSEBUTTONDOWN:
+                    r = pygame.rect.Rect(pygame.mouse.get_pos(), (1,1))
+                    for i in lst:
+                        for j in i:
+                            if j.rect.colliderect(r):
+                                if event.button == 1:   # LEFT CLICK
+                                    if not j.flag:
+                                        if j.val == MINE:
+                                            print('BOMBS')
+                                            boom_cell = j
+                                            run = False
+                                        j.visible = True
+                                        if j.val == 0:
+                                            open_square(lst, j)
 
-                            elif event.button == 3: # RIGHT CLICK
-                                if not j.visible:
-                                    j.flag = not j.flag
+                                elif event.button == 3: # RIGHT CLICK
+                                    if not j.visible:
+                                        j.flag = not j.flag
 
         for i in lst:
             for j in i:
@@ -240,19 +278,57 @@ def game(rows, cols, bombs):
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_r:
                     run = False
-                    restart(rows, cols, bombs)
+                    restart(rows, cols, bombs, agent)
                 elif event.key == pygame.K_ESCAPE:
                     run = False
                     pygame.quit()
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 run = False
                 if event.button == 1:   # LEFT CLICK
-                    restart(rows, cols, bombs)
+                    restart(rows, cols, bombs, agent)
                 else:
                     pygame.quit()
 
+def auto_play(agent, lst):
+    run = True
+    state = []
+    clicked = []
+    action = 0
+    for i in lst:
+        row = []
+        for j in i:
+            if j.visible:
+                row.append(j.val)
+                clicked.append(action)
+            else:
+                row.append(-1)
+            action += 1
+        state.append(row)
+    qs = agent.predict(np.array(state))[0]
+    for cell in clicked:
+        qs[cell] = np.min(qs)
+    action = np.argmax(qs)
+    i = action // len(lst[0])
+    j = action % len(lst[0])
+    square = lst[i][j]
+
+    if not square.flag:
+        if square.val == MINE:
+            print('BOMBS')
+            boom_cell = square
+            run = False
+        square.visible = True
+        if square.val == 0:
+            open_square(lst, square)
+    return run
+
 def main():
-    game(rows=10, cols=10, bombs=8)
+    rows=10
+    cols=10
+    bombs=10
+    agent = Agent(rows, cols)
+    agent.load_model('./minesweeper/model/model.h5')
+    game(rows, cols, bombs, agent)
 
 if __name__ == "__main__":
     pygame.init()

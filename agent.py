@@ -24,15 +24,15 @@ class Agent:
   def save_model(self):
     self.model.save('model.h5')
 
-  def load_model(self):
-    self.model = keras.models.load_model('model.h5')
+  def load_model(self, path):
+    self.model = keras.models.load_model(path)
 
   def __init__(self, rows, cols):
     self.model = self.create_model(rows, cols)
     self.replay_memory = deque(maxlen=REPLAY_MEMORY_SIZE)
 
   def predict(self, state):
-    return self.model.predict(np.array(state[None, ...]))
+    return self.model.predict(state[None, ...])
 
   def update_replay_memory(self, transition):
     self.replay_memory.append(transition)
