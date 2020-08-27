@@ -96,20 +96,22 @@ def check_right(table, x, y):
     return table
 
 class Square:
-    def __init__(self, x, y, w, h, val):
-        self.rect = pygame.rect.Rect(x, y, w, h)
+    def __init__(self, i, j, w, h, val):
+        self.i = i
+        self.j = j
+        self.x = j*w
+        self.y = i*h
         self.val = val
-        self.x = x
-        self.y = y
         self.visible = False
         self.flag = False
+        self.rect = pygame.rect.Rect(self.x, self.y, w, h)
 
 def restart(rows, cols, bombs, agent):
     game(rows, cols, bombs, agent)
 
 def open_square(lst, square):
     square.visible = True
-    i, j = square.x // SIZE, square.y // SIZE
+    i, j = square.i, square.j
     if i+1 < len(lst):
         if lst[i+1][j].visible == False and lst[i+1][j].flag == False:
             lst[i+1][j].visible = True
@@ -161,8 +163,9 @@ def game(rows, cols, bombs, agent):
     lst = [[] for i in range(rows)]
     for i in range(rows):
         for j in range(cols):
-            lst[i] += [Square(i * SIZE, j * SIZE, SIZE, SIZE, table[i][j])]
-            screen.blit(GREY, (i * SIZE, j * SIZE))
+            square = Square(i, j, SIZE, SIZE, table[i][j])
+            lst[i] += [square]
+            screen.blit(GREY, (square.x, square.y))
 
     run = True
     win = False
@@ -306,11 +309,11 @@ def heuristic(lst):
     return lst
 
 def main():
-    rows=10
+    rows=8
     cols=10
     bombs=10
     agent = Agent(rows, cols)
-    agent.load_model('./minesweeper/model/model.h5')
+    # agent.load_model('./minesweeper/model/model.h5')
     game(rows, cols, bombs, agent)
 
 if __name__ == "__main__":
