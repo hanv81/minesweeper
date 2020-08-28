@@ -23,7 +23,7 @@ BOOM = pygame.image.load(PATH + 'boom.png')
 GLASSES = pygame.image.load(PATH + 'sun-glasses.png')
 SAD = pygame.image.load(PATH + 'sun-sad.png')
 NUMBERS = [ZERO, ONE, TWO, THREE, FOUR, FIVE, SIX, SEVEN, EIGHT, BOMB]
-HEURISTIC = False
+HEURISTIC = True
 
 def create_table(rows, cols, bombs):
     table = [[0] * cols for i in range(rows)]
@@ -195,11 +195,19 @@ def game(rows, cols, bombs, agent):
                 qs = agent.predict(np.array(state))[0]
                 for cell in clicked:
                     qs[cell] = np.min(qs)
-                action = np.argmax(qs)
-
-            i = action // len(lst[0])
-            j = action % len(lst[0])
-            square = lst[i][j]
+                if np.max(qs) > np.min(qs):
+                    action = np.argmax(qs)
+                    i = action // len(lst[0])
+                    j = action % len(lst[0])
+                    square = lst[i][j]
+                else:
+                    print('no max q, just random')
+                    cells_to_click = []
+                    for i in range(rows):
+                        for j in range(cols):
+                            if not lst[j][j].visible and not lst[i][j].flag:
+                                cells_to_click.append(lst[i][j])
+                    square = np.random.sample(cells_to_click, 1)[0]
 
             if not square.flag:
                 if square.val == MINE:
@@ -220,9 +228,8 @@ def game(rows, cols, bombs, agent):
                     pygame.quit()
                 elif event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_r:
-                        restart(rows, cols, bombs)
+                        restart(rows, cols, bombs, agent)
                     elif event.key == pygame.K_a:
-                        print('auto play')
                         auto = True
                     elif event.key == pygame.K_ESCAPE:
                         run = False
@@ -306,14 +313,38 @@ def game(rows, cols, bombs, agent):
                     pygame.quit()
 
 def heuristic(lst):
+    rows = len(lst)
+    cols = len(lst[0])
+    for i in range(rows):
+        for j in range(cols):
+            if not lst[i][j].visible:
+                lst[i][j].flag = False
+    for i in range(rows):
+        for j in range(cols):
+            square = lst[i][j]
+            if square.visible and square.val > 0:  # square is open
+                neibors = []
+                neibors_flag = []
+                for r in range(i-1, i+2):
+                    for c in range(j-1, j+2):
+                        if 0<=r<rows and 0<=c<cols:
+                            if not lst[r][c].visible:
+                                if lst[r][c].flag:
+                                    neibors_flag.append(lst[r][c])
+                                else:
+                                    neibors.append(lst[r][c])
+                if len(neibors) == square.val - len(neibors_flag):
+                    for n in neibors:
+                        n.flag = True
+    time.sleep(0.5)
     return lst
 
 def main():
-    rows=8
+    rows=10
     cols=10
     bombs=10
-    agent = Agent(rows, cols)
-    # agent.load_model('./minesweeper/model/model.h5')
+    agent = Agent()
+    agent.load_model('./minesweeper/model/model.h5')
     game(rows, cols, bombs, agent)
 
 if __name__ == "__main__":

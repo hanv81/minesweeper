@@ -16,10 +16,9 @@ class Agent:
     layer = Flatten()(input)
     layer = Dense(512, activation='relu')(layer)
     output = Dense(rows * cols, activation='linear')(layer)
-    model = Model(input, output)
-    model.compile(loss='mse', optimizer='adam', metrics='accuracy')
-    model.summary()
-    return model
+    self.model = Model(input, output)
+    self.model.compile(loss='mse', optimizer='adam', metrics='accuracy')
+    self.model.summary()
 
   def save_model(self):
     self.model.save('model.h5')
@@ -27,8 +26,7 @@ class Agent:
   def load_model(self, path):
     self.model = keras.models.load_model(path)
 
-  def __init__(self, rows, cols):
-    self.model = self.create_model(rows, cols)
+  def __init__(self):
     self.replay_memory = deque(maxlen=REPLAY_MEMORY_SIZE)
 
   def predict(self, state):

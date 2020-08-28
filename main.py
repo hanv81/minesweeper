@@ -17,7 +17,8 @@ env = gym.make('minesweeper-v0', rows=ROWS, cols=COLS, mines=MINES)
 
 def train():
     epsilon = 1
-    agent = Agent(ROWS, COLS)
+    agent = Agent()
+    agent.create_model(ROWS, COLS)
 
     y = []
     p = []
@@ -34,7 +35,10 @@ def train():
                 qs = agent.predict(state)[0]
                 for cell in clicked_cells:
                     qs[cell] = np.min(qs)
-                action = np.argmax(qs)
+                if np.max(qs) > np.min(qs):
+                    action = np.argmax(qs)
+                else:
+                    action = random.sample(cells_to_click, 1)[0]    # no max action, just random
 
             r = action // COLS
             c = action % COLS
@@ -111,5 +115,80 @@ def main():
     print('TRAIN:  max %d avg %1.2f max_avg %1.2f'%( max(p2), avg2[-1], max(avg2)))
     plot(p1, avg1, p2, avg2)
 
+def test_agent():
+    p1, avg1, win1 = test(heuristic=False)
+    p2, avg2, win2 = test(heuristic=True)
+    print('------------------ SUMMARY ------------------')
+    print('NO HEURISTIC:    max %d avg %1.2f max_avg %1.2f win %d'%( max(p1), avg1[-1], max(avg1), win1))
+    print('HEURISTIC:       max %d avg %1.2f max_avg %1.2f win %d'%( max(p2), avg2[-1], max(avg2), win2))
+    # plot(p1, avg1, p2, avg2)
+
+def test(heuristic):
+    agent = Agent()
+    agent.load_model('./minesweeper/model/model.h5')
+
+    y = []
+    p = []
+    win = 0
+    for episode in range(EPISODES):
+        state = env.reset()
+        point = 0
+        done = False
+        clicked_cells = []
+        cells_to_click = [x for x in range(0, ROWS * COLS)]
+        while not done:
+            if point == 0: # first cell -> just random
+                action = random.randint(0, ROWS * COLS - 1)
+            else:
+                mine_cells = []
+                if heuristic:
+                    for i in range(ROWS):
+                        for j in range(COLS):
+                            if state[i,j] > 0:
+                                neibors = []
+                                neibors_flag = []
+                                for r in range(i-1, i+2):
+                                    for c in range(j-1, j+2):
+                                        if 0<=r<ROWS and 0<=c<COLS:
+                                            if state[r,c] < 0:
+                                                pos = r * COLS + c
+                                                if pos in mine_cells:
+                                                    neibors_flag.append(pos)
+                                                else:
+                                                    neibors.append(pos)
+                                if state[i,j] == len(neibors) + len(neibors_flag):
+                                    for n in neibors:
+                                        mine_cells.append(n)
+                qs = agent.predict(state)[0]
+                for cell in range(ROW*COLS):
+                    if cell in clicked_cells or cell in mine_cells:
+                        qs[cell] = np.min(qs)
+                if np.max(qs) > np.min(qs):
+                    action = np.argmax(qs)
+                else:
+                    action = random.sample(cells_to_click, 1)[0]
+            r = action // COLS
+            c = action % COLS
+            next_state, reward, done, info = env.step((r,c))
+            if reward > 0:
+                if done:
+                    win += 1
+                point += reward
+                for (r,c) in info:
+                    action = r * COLS + c
+                    clicked_cells.append(action)
+                    cells_to_click.remove(action)
+            state = next_state
+
+        p.append(point)
+        avg = sum(p)/(episode+1)
+        y.append(avg)
+        
+        if (episode + 1) % 100 == 0:
+            print("episode %d %d %1.2f"%(episode+1, point, avg))
+
+    return p, y, win
+
 if __name__ == "__main__":
     main()
+    # test_agent()
