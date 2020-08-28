@@ -176,8 +176,12 @@ def game(rows, cols, bombs, agent):
         if auto:    # agent play
             state = []
             clicked = []
-            action = randint(0, rows * cols - 1)
-            if point > 0:
+            if point == 0:
+                action = randint(0, rows * cols - 1)
+                i = action // len(lst[0])
+                j = action % len(lst[0])
+                square = lst[i][j]
+            else:
                 if HEURISTIC:
                     lst = heuristic(lst)
 

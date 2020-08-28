@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 ROWS = 10
 COLS = 10
 MINES = 10
-EPISODES = 100
+EPISODES = 1000
 
 EPSILON_DECAY = 0.99975
 MIN_EPSILON = 0.001
@@ -107,6 +107,18 @@ def plot(random_p, random_avg, train_p, train_avg):
     plt.title('Average Point')
     plt.savefig('minesweeper')
 
+def plot_test(random_avg, test_no_heu_avg, test_heu_avg):
+    x = [xi for xi in range(1, EPISODES+1)]
+    plt.figure(figsize=(15,10))
+    plt.xlabel('Episode')
+    plt.ylabel('Point')
+    plt.plot(x, random_avg)
+    plt.plot(x, test_no_heu_avg)
+    plt.plot(x, test_heu_avg)
+    plt.legend(['Random','No Heuristic','Heuristic'])
+    plt.title('Average Point')
+    plt.savefig('test')
+
 def main():
     p1, avg1 = play_random()
     p2, avg2 = train()
@@ -116,12 +128,14 @@ def main():
     plot(p1, avg1, p2, avg2)
 
 def test_agent():
+    p, avg = play_random()
     p1, avg1, win1 = test(heuristic=False)
     p2, avg2, win2 = test(heuristic=True)
     print('------------------ SUMMARY ------------------')
+    print('RANDOM:          max %d avg %1.2f max_avg %1.2f'%( max(p), avg[-1], max(avg)))
     print('NO HEURISTIC:    max %d avg %1.2f max_avg %1.2f win %d'%( max(p1), avg1[-1], max(avg1), win1))
     print('HEURISTIC:       max %d avg %1.2f max_avg %1.2f win %d'%( max(p2), avg2[-1], max(avg2), win2))
-    # plot(p1, avg1, p2, avg2)
+    plot_test(avg, avg1, avg2)
 
 def test(heuristic):
     agent = Agent()
@@ -160,7 +174,7 @@ def test(heuristic):
                                     for n in neibors:
                                         mine_cells.append(n)
                 qs = agent.predict(state)[0]
-                for cell in range(ROW*COLS):
+                for cell in range(ROWS*COLS):
                     if cell in clicked_cells or cell in mine_cells:
                         qs[cell] = np.min(qs)
                 if np.max(qs) > np.min(qs):
@@ -184,11 +198,11 @@ def test(heuristic):
         avg = sum(p)/(episode+1)
         y.append(avg)
         
-        if (episode + 1) % 100 == 0:
+        if (episode + 1) % 10 == 0:
             print("episode %d %d %1.2f"%(episode+1, point, avg))
 
     return p, y, win
 
 if __name__ == "__main__":
-    main()
-    # test_agent()
+    # main()
+    test_agent()
