@@ -40,6 +40,7 @@ class Minesweeper(gym.Env):
 		        if (r,c) in self.mine_coords:
 		            neighboring_mines += 1
 		self.state[coord] = neighboring_mines
+		self.coords_to_clear -= 1
 
 		if neighboring_mines == 0:
 			for r in range(coord[0]-1, coord[0]+2):
@@ -61,7 +62,6 @@ class Minesweeper(gym.Env):
 		elif coord not in self.clickedCoords:
 			reward = 1
 			info = self.scanCoord(coord)
-			self.coords_to_clear -= 1
 			if self.coords_to_clear == 0:
 				# Win !!!
 				done = True
