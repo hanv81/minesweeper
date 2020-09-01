@@ -11,9 +11,16 @@ BATCH_SIZE = 64
 GAMMA = 0.99
 
 class Agent:
-  def create_model(self, rows, cols):
-    input = Input(shape=(rows, cols))
-    layer = Flatten()(input)
+  def create_model(self, rows, cols, cnn=False):
+    input = Input(shape=(rows, cols, 1))
+    if cnn:
+      self.cnn = True
+      layer = Conv2D(filters=8, kernel_size=2, padding='same', activation='relu')(input)
+      layer = MaxPooling2D()(layer)
+      layer = Flatten()(layer)
+    else:
+      self.cnn = False
+      layer = Flatten()(input)
     layer = Dense(512, activation='relu')(layer)
     output = Dense(rows * cols, activation='linear')(layer)
     self.model = Model(input, output)
@@ -21,7 +28,10 @@ class Agent:
     self.model.summary()
 
   def save_model(self):
-    self.model.save('model.h5')
+    filename = 'model.h5'
+    if self.cnn:
+      filename = 'model_cnn.h5'
+    self.model.save(filename)
 
   def load_model(self, path):
     self.model = keras.models.load_model(path)

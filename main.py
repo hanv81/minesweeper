@@ -9,16 +9,17 @@ ROWS = 10
 COLS = 10
 MINES = 10
 EPISODES = 1000
+EPISODES_TEST = 1000
 
 EPSILON_DECAY = 0.99975
 MIN_EPSILON = 0.001
 
 env = gym.make('minesweeper-v0', rows=ROWS, cols=COLS, mines=MINES)
 
-def train():
+def train(cnn=False):
     epsilon = 1
     agent = Agent()
-    agent.create_model(ROWS, COLS)
+    agent.create_model(ROWS, COLS, cnn)
 
     y = []
     p = []
@@ -94,21 +95,20 @@ def play_random():
 
     return p, y
 
-def plot(random_p, random_avg, train_p, train_avg):
+def plot(random_p, random_avg, train_p, train_avg, train_cnn_p, train_cnn_avg):
     x = [xi for xi in range(1, EPISODES+1)]
-    text = 'Max random ' + str(max(random_p)) + '\nMax train ' + str(max(train_p)) + '\nAvg random ' + str(random_avg[-1]) + '\nAvg train ' + str(train_avg[-1])
     plt.figure(figsize=(15,10))
     plt.xlabel('Episode')
     plt.ylabel('Point')
     plt.plot(x, random_avg)
     plt.plot(x, train_avg)
-    plt.text(EPISODES/2, 1, text)
-    plt.legend(['Random','Train'])
+    plt.plot(x, train_cnn_avg)
+    plt.legend(['Random','DNN','CNN'])
     plt.title('Average Point')
-    plt.savefig('minesweeper')
+    plt.savefig('train')
 
 def plot_test(random_avg, test_no_heu_avg, test_heu_avg):
-    x = [xi for xi in range(1, EPISODES+1)]
+    x = [xi for xi in range(1, EPISODES_TEST+1)]
     plt.figure(figsize=(15,10))
     plt.xlabel('Episode')
     plt.ylabel('Point')
@@ -121,11 +121,13 @@ def plot_test(random_avg, test_no_heu_avg, test_heu_avg):
 
 def main():
     p1, avg1 = play_random()
-    p2, avg2 = train()
+    p2, avg2 = train(cnn=False)
+    p3, avg3 = train(cnn=True)
     print('------------------ SUMMARY ------------------')
-    print('RANDOM: max %d avg %1.2f max_avg %1.2f'%( max(p1), avg1[-1], max(avg1)))
-    print('TRAIN:  max %d avg %1.2f max_avg %1.2f'%( max(p2), avg2[-1], max(avg2)))
-    plot(p1, avg1, p2, avg2)
+    print('RANDOM:  max %d avg %1.2f max_avg %1.2f'%( max(p1), avg1[-1], max(avg1)))
+    print('DNN:     max %d avg %1.2f max_avg %1.2f'%( max(p2), avg2[-1], max(avg2)))
+    print('CNN:     max %d avg %1.2f max_avg %1.2f'%( max(p3), avg3[-1], max(avg3)))
+    plot(p1, avg1, p2, avg2, p3, avg3)
 
 def test_agent():
     p, avg = play_random()
@@ -144,7 +146,7 @@ def test(heuristic):
     y = []
     p = []
     win = 0
-    for episode in range(EPISODES):
+    for episode in range(EPISODES_TEST):
         state = env.reset()
         point = 0
         done = False
@@ -204,5 +206,5 @@ def test(heuristic):
     return p, y, win
 
 if __name__ == "__main__":
-    # main()
-    test_agent()
+    main()
+    # test_agent()
