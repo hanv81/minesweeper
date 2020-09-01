@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 ROWS = 10
 COLS = 10
 MINES = 10
-EPISODES = 1000
+EPISODES = 20000
 EPISODES_TEST = 1000
 
 EPSILON_DECAY = 0.99975
