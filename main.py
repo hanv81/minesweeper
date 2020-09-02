@@ -67,10 +67,10 @@ def train(cnn=False):
     agent.save_model()
     return p, y
 
-def play_random():
+def play_random(episodes):
     y = []
     p = []
-    for episode in range(EPISODES):
+    for episode in range(episodes):
         env.reset()
         point = 0
         done = False
@@ -107,20 +107,22 @@ def plot(random_p, random_avg, train_p, train_avg, train_cnn_p, train_cnn_avg):
     plt.title('Average Point')
     plt.savefig('train')
 
-def plot_test(random_avg, test_no_heu_avg, test_heu_avg):
+def plot_test(random_avg, dnn_no_heu_avg, dnn_heu_avg, cnn_no_heu_avg, cnn_heu_avg):
     x = [xi for xi in range(1, EPISODES_TEST+1)]
     plt.figure(figsize=(15,10))
     plt.xlabel('Episode')
     plt.ylabel('Point')
     plt.plot(x, random_avg)
-    plt.plot(x, test_no_heu_avg)
-    plt.plot(x, test_heu_avg)
-    plt.legend(['Random','No Heuristic','Heuristic'])
+    plt.plot(x, dnn_no_heu_avg)
+    plt.plot(x, dnn_heu_avg)
+    plt.plot(x, cnn_no_heu_avg)
+    plt.plot(x, cnn_heu_avg)
+    plt.legend(['Random','DNN No Heuristic','DNN Heuristic', 'CNN No Heuristic','CNN Heuristic'])
     plt.title('Average Point')
     plt.savefig('test')
 
 def main():
-    p1, avg1 = play_random()
+    p1, avg1 = play_random(EPISODES)
     p2, avg2 = train(cnn=False)
     p3, avg3 = train(cnn=True)
     print('------------------ SUMMARY ------------------')
@@ -130,19 +132,24 @@ def main():
     plot(p1, avg1, p2, avg2, p3, avg3)
 
 def test_agent():
-    p, avg = play_random()
-    p1, avg1, win1 = test(heuristic=False)
-    p2, avg2, win2 = test(heuristic=True)
-    print('------------------ SUMMARY ------------------')
-    print('RANDOM:          max %d avg %1.2f max_avg %1.2f'%( max(p), avg[-1], max(avg)))
-    print('NO HEURISTIC:    max %d avg %1.2f max_avg %1.2f win %d'%( max(p1), avg1[-1], max(avg1), win1))
-    print('HEURISTIC:       max %d avg %1.2f max_avg %1.2f win %d'%( max(p2), avg2[-1], max(avg2), win2))
-    plot_test(avg, avg1, avg2)
-
-def test(heuristic):
+    p, avg = play_random(EPISODES_TEST)
     agent = Agent()
-    agent.load_model('./minesweeper/model/model.h5')
+    agent_cnn = Agent()
+    agent.load_model('./minesweeper/model/model_10_10_10.h5')
+    agent_cnn.load_model('./minesweeper/model/model_10_10_10_cnn.h5')
+    p1, avg1, win1 = test(agent)
+    p2, avg2, win2 = test(agent, heuristic=True)
+    p3, avg3, win3 = test(agent_cnn)
+    p4, avg4, win4 = test(agent_cnn, heuristic=True)
+    print('------------------ SUMMARY ------------------')
+    print('RANDOM:              max %d avg %1.2f max_avg %1.2f' % (max(p), avg[-1], max(avg)))
+    print('DNN NO HEURISTIC:    max %d avg %1.2f max_avg %1.2f win %d' % (max(p1), avg1[-1], max(avg1), win1))
+    print('DNN HEURISTIC:       max %d avg %1.2f max_avg %1.2f win %d' % (max(p2), avg2[-1], max(avg2), win2))
+    print('CNN NO HEURISTIC:    max %d avg %1.2f max_avg %1.2f win %d' % (max(p3), avg3[-1], max(avg3), win3))
+    print('CNN HEURISTIC:       max %d avg %1.2f max_avg %1.2f win %d' % (max(p4), avg4[-1], max(avg4), win4))
+    plot_test(avg, avg1, avg2, avg3, avg4)
 
+def test(agent, heuristic=False):
     y = []
     p = []
     win = 0
@@ -200,11 +207,11 @@ def test(heuristic):
         avg = sum(p)/(episode+1)
         y.append(avg)
         
-        if (episode + 1) % 10 == 0:
+        if (episode + 1) % 100 == 0:
             print("episode %d %d %1.2f"%(episode+1, point, avg))
 
     return p, y, win
 
 if __name__ == "__main__":
-    main()
-    # test_agent()
+    # main()
+    test_agent()
