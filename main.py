@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 ROWS = 10
 COLS = 10
 MINES = 10
-EPISODES = 20000
+EPISODES = 100
 EPISODES_TEST = 1000
 
 EPSILON_DECAY = 0.99975
@@ -64,7 +64,10 @@ def train(cnn=False):
         epsilon *= EPSILON_DECAY
         epsilon = max(MIN_EPSILON, epsilon)
 
-    agent.save_model()
+    filename = 'model_' + str(ROWS) + '_' + str(COLS) + '_' + str(MINES) + '.h5'
+    if cnn:
+        filename = 'model_' + str(ROWS) + '_' + str(COLS) + '_' + str(MINES) + '_cnn.h5'
+    agent.save_model(filename)
     return p, y
 
 def play_random(episodes):
@@ -135,8 +138,8 @@ def test_agent():
     p, avg = play_random(EPISODES_TEST)
     agent = Agent()
     agent_cnn = Agent()
-    agent.load_model('./minesweeper/model/model_10_10_10.h5')
-    agent_cnn.load_model('./minesweeper/model/model_10_10_10_cnn.h5')
+    agent.load_model('./minesweeper/model/model_' + str(ROWS) + '_' + str(COLS) + '_' + str(MINES) + '.h5')
+    agent_cnn.load_model('./minesweeper/model/model_' + str(ROWS) + '_' + str(COLS) + '_' + str(MINES) + '_cnn.h5')
     p1, avg1, win1 = test(agent)
     p2, avg2, win2 = test(agent, heuristic=True)
     p3, avg3, win3 = test(agent_cnn)
@@ -213,5 +216,5 @@ def test(agent, heuristic=False):
     return p, y, win
 
 if __name__ == "__main__":
-    # main()
-    test_agent()
+    main()
+    # test_agent()

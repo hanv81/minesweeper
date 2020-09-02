@@ -348,7 +348,7 @@ def main():
     cols=10
     bombs=10
     agent = Agent()
-    agent.load_model('./minesweeper/model/model.h5')
+    agent.load_model('./minesweeper/model/model_' + str(rows) + '_' + str(cols) + '_' +str(bombs) + '_cnn.h5')
     game(rows, cols, bombs, agent)
 
 if __name__ == "__main__":

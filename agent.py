@@ -27,10 +27,7 @@ class Agent:
     self.model.compile(loss='mse', optimizer='adam', metrics='accuracy')
     self.model.summary()
 
-  def save_model(self):
-    filename = 'model.h5'
-    if self.cnn:
-      filename = 'model_cnn.h5'
+  def save_model(self, filename):
     self.model.save(filename)
 
   def load_model(self, path):
