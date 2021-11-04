@@ -30,17 +30,7 @@ def train(cnn=False):
         clicked_cells = []
         cells_to_click = [x for x in range(0, ROWS * COLS)]
         while not done:
-            if random.random() <= epsilon or point == 0: # first cell -> just random
-                action = random.sample(cells_to_click, 1)[0]
-            else:
-                qs = agent.predict(state)[0]
-                for cell in clicked_cells:
-                    qs[cell] = np.min(qs)
-                if np.max(qs) > np.min(qs):
-                    action = np.argmax(qs)
-                else:
-                    action = random.sample(cells_to_click, 1)[0]    # no max action, just random
-
+            action = action_policy(agent, state, point, cells_to_click, clicked_cells, epsilon)
             r = action // COLS
             c = action % COLS
             next_state, reward, done, info = env.step((r,c))
@@ -64,11 +54,25 @@ def train(cnn=False):
         epsilon *= EPSILON_DECAY
         epsilon = max(MIN_EPSILON, epsilon)
 
-    filename = 'model_' + str(ROWS) + '_' + str(COLS) + '_' + str(MINES) + '.h5'
-    if cnn:
-        filename = 'model_' + str(ROWS) + '_' + str(COLS) + '_' + str(MINES) + '_cnn.h5'
-    agent.save_model(filename)
+    save_model(agent, cnn)
+
     return p, y
+
+def action_policy(agent, state, point, cells_to_click, clicked_cells, epsilon):
+    if random.random() <= epsilon or point == 0: # first cell -> just random
+        return random.sample(cells_to_click, 1)[0]
+    else:
+        qs = agent.predict(state)[0]
+        for cell in clicked_cells:
+            qs[cell] = np.min(qs)
+        if np.max(qs) > np.min(qs):
+            return np.argmax(qs)
+
+    return random.sample(cells_to_click, 1)[0]    # no max action, just random
+
+def save_model(agent, cnn):
+    filename = 'model_' + str(ROWS) + '_' + str(COLS) + '_' + str(MINES) + ('_cnn.h5' if cnn else '.h5')
+    agent.save_model(filename)
 
 def play_random(episodes):
     y = []
@@ -98,7 +102,7 @@ def play_random(episodes):
 
     return p, y
 
-def plot(random_p, random_avg, train_p, train_avg, train_cnn_p, train_cnn_avg):
+def plot(random_avg, train_avg, train_cnn_avg):
     x = [xi for xi in range(1, EPISODES+1)]
     plt.figure(figsize=(15,10))
     plt.xlabel('Episode')
@@ -106,7 +110,7 @@ def plot(random_p, random_avg, train_p, train_avg, train_cnn_p, train_cnn_avg):
     plt.plot(x, random_avg)
     plt.plot(x, train_avg)
     plt.plot(x, train_cnn_avg)
-    plt.legend(['Random','DNN','CNN'])
+    plt.legend(['Random','DQN','DQCNN'])
     plt.title('Average Point')
     plt.savefig('train')
 
@@ -120,7 +124,7 @@ def plot_test(random_avg, dnn_no_heu_avg, dnn_heu_avg, cnn_no_heu_avg, cnn_heu_a
     plt.plot(x, dnn_heu_avg)
     plt.plot(x, cnn_no_heu_avg)
     plt.plot(x, cnn_heu_avg)
-    plt.legend(['Random','DNN No Heuristic','DNN Heuristic', 'CNN No Heuristic','CNN Heuristic'])
+    plt.legend(['Random','DQN','DQN Heuristic', 'DQCNN','DQCNN Heuristic'])
     plt.title('Average Point')
     plt.savefig('test')
 
@@ -130,9 +134,9 @@ def main():
     p3, avg3 = train(cnn=True)
     print('------------------ SUMMARY ------------------')
     print('RANDOM:  max %d avg %1.2f max_avg %1.2f'%( max(p1), avg1[-1], max(avg1)))
-    print('DNN:     max %d avg %1.2f max_avg %1.2f'%( max(p2), avg2[-1], max(avg2)))
-    print('CNN:     max %d avg %1.2f max_avg %1.2f'%( max(p3), avg3[-1], max(avg3)))
-    plot(p1, avg1, p2, avg2, p3, avg3)
+    print('DQN:     max %d avg %1.2f max_avg %1.2f'%( max(p2), avg2[-1], max(avg2)))
+    print('DQCNN:   max %d avg %1.2f max_avg %1.2f'%( max(p3), avg3[-1], max(avg3)))
+    plot(avg1, avg2, avg3)
 
 def test_agent():
     p, avg = play_random(EPISODES_TEST)
