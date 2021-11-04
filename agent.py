@@ -39,12 +39,11 @@ class Agent:
   def predict(self, state):
     return self.model.predict(state[None, ...])
 
-  def update_replay_memory(self, transition):
+  def step(self, transition):
     self.replay_memory.append(transition)
-
-  def train(self):
     if len(self.replay_memory) < MIN_REPLAY_MEMORY_SIZE:
       return
+
     batch = random.sample(self.replay_memory, BATCH_SIZE)
     states = np.array([transition[0] for transition in batch])
     qs_list = self.model.predict(states)
@@ -55,12 +54,9 @@ class Agent:
     X = []
     y = []
 
-    for index, (state, action, reward, next_state, done) in enumerate(batch):
+    for index, (state, action, reward, _, done) in enumerate(batch):
       qs = qs_list[index]
-      qs[action] = reward
-      if not done:
-        qs[action] += GAMMA * np.max(next_qs[index])
-
+      qs[action] = reward + (1 - int(done)) * GAMMA * np.max(next_qs[index])
       X.append(state)
       y.append(qs)
 

@@ -34,8 +34,7 @@ def train(cnn=False):
             r = action // COLS
             c = action % COLS
             next_state, reward, done, info = env.step((r,c))
-            agent.update_replay_memory((state, action, reward, next_state, done))
-            agent.train()
+            agent.step((state, action, reward, next_state, done))
             if reward > 0:
                 point += reward
                 for (r,c) in info:
