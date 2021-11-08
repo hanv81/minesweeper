@@ -1,5 +1,5 @@
 import gym
-import gym_minesweeper
+import gym_minesweeper  # must import for create env
 from agent import Agent
 import numpy as np
 import random
@@ -43,6 +43,7 @@ def train(cnn=False):
                     cells_to_click.remove(action)
             state = next_state
 
+        agent.update_target()
         p.append(point)
         avg = sum(p)/(episode+1)
         y.append(avg)
@@ -149,10 +150,10 @@ def test_agent():
     p4, avg4, win4 = test(agent_cnn, heuristic=True)
     print('------------------ SUMMARY ------------------')
     print('RANDOM:              max %d avg %1.2f max_avg %1.2f' % (max(p), avg[-1], max(avg)))
-    print('DNN NO HEURISTIC:    max %d avg %1.2f max_avg %1.2f win %d' % (max(p1), avg1[-1], max(avg1), win1))
-    print('DNN HEURISTIC:       max %d avg %1.2f max_avg %1.2f win %d' % (max(p2), avg2[-1], max(avg2), win2))
-    print('CNN NO HEURISTIC:    max %d avg %1.2f max_avg %1.2f win %d' % (max(p3), avg3[-1], max(avg3), win3))
-    print('CNN HEURISTIC:       max %d avg %1.2f max_avg %1.2f win %d' % (max(p4), avg4[-1], max(avg4), win4))
+    print('DQN:                 max %d avg %1.2f max_avg %1.2f win %d' % (max(p1), avg1[-1], max(avg1), win1))
+    print('DQN HEURISTIC:       max %d avg %1.2f max_avg %1.2f win %d' % (max(p2), avg2[-1], max(avg2), win2))
+    print('DQCNN:               max %d avg %1.2f max_avg %1.2f win %d' % (max(p3), avg3[-1], max(avg3), win3))
+    print('DQCNN HEURISTIC:     max %d avg %1.2f max_avg %1.2f win %d' % (max(p4), avg4[-1], max(avg4), win4))
     plot_test(avg, avg1, avg2, avg3, avg4)
 
 def test(agent, heuristic=False):

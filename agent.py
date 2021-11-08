@@ -25,7 +25,7 @@ class Agent:
     output = Dense(rows * cols, activation='linear')(layer)
     self.model = Model(input, output)
     self.model.compile(loss='mse', optimizer='adam', metrics='accuracy')
-    self.model.summary()
+    self.target = keras.models.clone_model(self.model)
 
   def save_model(self, filename):
     self.model.save(filename)
@@ -39,6 +39,9 @@ class Agent:
   def predict(self, state):
     return self.model.predict(state[None, ...])
 
+  def update_target(self):
+    self.target.set_weights(self.model.get_weights()) 
+
   def step(self, transition):
     self.replay_memory.append(transition)
     if len(self.replay_memory) < MIN_REPLAY_MEMORY_SIZE:
@@ -49,7 +52,7 @@ class Agent:
     qs_list = self.model.predict(states)
 
     next_states = np.array([transition[3] for transition in batch])
-    next_qs = self.model.predict(next_states)
+    next_qs = self.target.predict(next_states)
 
     X = []
     y = []
