@@ -1,6 +1,6 @@
 import gym
 import gym_minesweeper  # must import for create env
-from agent import Agent
+from agent.DQN import DQN
 import numpy as np
 import random
 import matplotlib.pyplot as plt
@@ -18,7 +18,7 @@ env = gym.make('minesweeper-v0', rows=ROWS, cols=COLS, mines=MINES)
 
 def train(cnn=False):
     epsilon = 1
-    agent = Agent()
+    agent = DQN()
     agent.create_model(ROWS, COLS, cnn)
 
     y = []
