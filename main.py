@@ -48,7 +48,7 @@ def train(cnn=False):
         avg = sum(p)/(episode+1)
         y.append(avg)
         
-        if (episode + 1) % 10 == 0:
+        if (episode + 1) % 100 == 0:
             print("episode %d %d %1.2f"%(episode+1, point, avg))
 
         epsilon *= EPSILON_DECAY
@@ -77,6 +77,7 @@ def save_model(agent, cnn):
 def play_random(episodes):
     y = []
     p = []
+    print("Random playing ...")
     for episode in range(episodes):
         env.reset()
         point = 0
@@ -86,7 +87,7 @@ def play_random(episodes):
             action = random.sample(cells_to_click, 1)[0]
             r = action // COLS
             c = action % COLS
-            next_state, reward, done, info = env.step((r,c))
+            _, reward, done, info = env.step((r,c))
             if reward > 0:
                 point += reward
                 for (r,c) in info:
@@ -96,9 +97,6 @@ def play_random(episodes):
         p.append(point)
         avg = sum(p)/(episode+1)
         y.append(avg)
-
-        if (episode + 1) % 100 == 0:
-            print("episode %d %d"%(episode+1, point))
 
     return p, y
 
@@ -140,8 +138,8 @@ def main():
 
 def test_agent():
     p, avg = play_random(EPISODES_TEST)
-    agent = Agent()
-    agent_cnn = Agent()
+    agent = DQN()
+    agent_cnn = DQN()
     agent.load_model('./minesweeper/model/model_' + str(ROWS) + '_' + str(COLS) + '_' + str(MINES) + '.h5')
     agent_cnn.load_model('./minesweeper/model/model_' + str(ROWS) + '_' + str(COLS) + '_' + str(MINES) + '_cnn.h5')
     p1, avg1, win1 = test(agent)

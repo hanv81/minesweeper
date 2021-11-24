@@ -10,7 +10,7 @@ MIN_REPLAY_MEMORY_SIZE = 1000
 BATCH_SIZE = 64
 GAMMA = 0.99
 
-class DoubleDQN:
+class DDQN:
   def create_model(self, rows, cols, cnn=False):
     input = Input(shape=(rows, cols, 1))
     if cnn:
