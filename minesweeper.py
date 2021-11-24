@@ -1,6 +1,6 @@
 from random import randint
 import pygame
-from agent import Agent
+from agent.DoubleDQN import DoubleDQN
 import numpy as np
 import time
 
@@ -347,7 +347,7 @@ def main():
     rows=10
     cols=10
     bombs=10
-    agent = Agent()
+    agent = DoubleDQN()
     agent.load_model('./minesweeper/model/model_' + str(rows) + '_' + str(cols) + '_' +str(bombs) + '_cnn.h5')
     game(rows, cols, bombs, agent)
 
