@@ -1,5 +1,5 @@
 from tensorflow.keras.models import Model
-from tensorflow.keras.layers import *
+from tensorflow.keras.layers import Dense, Input, Flatten, Conv2D, MaxPooling2D
 from tensorflow import keras
 from collections import deque
 import random

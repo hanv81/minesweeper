@@ -1,5 +1,5 @@
 from tensorflow.keras.models import Model
-from tensorflow.keras.layers import *
+from tensorflow.keras.layers import Dense, Input, Flatten, Conv2D, MaxPooling2D
 from tensorflow import keras
 from collections import deque
 import random
@@ -49,7 +49,7 @@ class DQN:
 
     batch = random.sample(self.replay_memory, BATCH_SIZE)
     states = np.array([transition[0] for transition in batch])
-    qs_list = self.model.predict(states)
+    qs = self.model.predict(states)
 
     next_states = np.array([transition[3] for transition in batch])
     next_qs = self.target.predict(next_states)
@@ -58,9 +58,8 @@ class DQN:
     y = []
 
     for index, (state, action, reward, _, done) in enumerate(batch):
-      qs = qs_list[index]
-      qs[action] = reward + (1 - int(done)) * GAMMA * np.max(next_qs[index])
+      qs[index][action] = reward + (1 - int(done)) * GAMMA * np.max(next_qs[index])
       X.append(state)
-      y.append(qs)
+      y.append(qs[index])
 
     self.model.fit(np.array(X), np.array(y), batch_size=BATCH_SIZE, verbose=0)
