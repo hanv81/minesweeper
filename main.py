@@ -100,15 +100,14 @@ def play_random(episodes):
 
     return p, y
 
-def plot(random_avg, train_avg, train_cnn_avg):
+def plot(random_avg, train_avg):
     x = [xi for xi in range(1, EPISODES+1)]
     plt.figure(figsize=(15,10))
     plt.xlabel('Episode')
     plt.ylabel('Point')
     plt.plot(x, random_avg)
     plt.plot(x, train_avg)
-    plt.plot(x, train_cnn_avg)
-    plt.legend(['Random','DQN','DQCNN'])
+    plt.legend(['Random','DQN'])
     plt.title('Average Point')
     plt.savefig('train')
 
@@ -128,13 +127,11 @@ def plot_test(random_avg, dnn_no_heu_avg, dnn_heu_avg, cnn_no_heu_avg, cnn_heu_a
 
 def main():
     p1, avg1 = play_random(EPISODES)
-    p2, avg2 = train(cnn=False)
-    p3, avg3 = train(cnn=True)
+    p2, avg2 = train()
     print('------------------ SUMMARY ------------------')
     print('RANDOM:  max %d avg %1.2f max_avg %1.2f'%( max(p1), avg1[-1], max(avg1)))
     print('DQN:     max %d avg %1.2f max_avg %1.2f'%( max(p2), avg2[-1], max(avg2)))
-    print('DQCNN:   max %d avg %1.2f max_avg %1.2f'%( max(p3), avg3[-1], max(avg3)))
-    plot(avg1, avg2, avg3)
+    plot(avg1, avg2)
 
 def test_agent():
     p, avg = play_random(EPISODES_TEST)
