@@ -54,7 +54,7 @@ def train(cnn=False):
         epsilon *= EPSILON_DECAY
         epsilon = max(MIN_EPSILON, epsilon)
 
-    save_model(agent, cnn)
+    agent.save_model()
 
     return p, y
 
@@ -69,10 +69,6 @@ def action_policy(agent, state, point, cells_to_click, clicked_cells, epsilon):
             return np.argmax(qs)
 
     return random.sample(cells_to_click, 1)[0]    # no max action, just random
-
-def save_model(agent, cnn):
-    filename = 'model_' + str(ROWS) + '_' + str(COLS) + '_' + str(MINES) + ('_cnn.h5' if cnn else '.h5')
-    agent.save_model(filename)
 
 def play_random(episodes):
     y = []

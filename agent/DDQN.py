@@ -11,6 +11,9 @@ BATCH_SIZE = 64
 GAMMA = 0.99
 
 class DDQN:
+  def __init__(self):
+    self.replay_memory = deque(maxlen=REPLAY_MEMORY_SIZE)
+
   def create_model(self, rows, cols, cnn=False):
     input = Input(shape=(rows, cols, 1))
     if cnn:
@@ -30,14 +33,11 @@ class DDQN:
     self.model.compile(loss='mse', optimizer='adam', metrics='accuracy')
     self.target = keras.models.clone_model(self.model)
 
-  def save_model(self, filename):
-    self.model.save(filename)
+  def save_model(self):
+    self.model.save('ddqn.h5')
 
   def load_model(self, path):
     self.model = keras.models.load_model(path)
-
-  def __init__(self):
-    self.replay_memory = deque(maxlen=REPLAY_MEMORY_SIZE)
 
   def predict(self, state):
     return self.model.predict(state[None, ...])
