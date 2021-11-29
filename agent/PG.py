@@ -53,7 +53,7 @@ class PG:
     action_onehot = np.zeros([self.action_size])
     action_onehot[action] = 1
     self.actions.append(action_onehot)
-    self.rewards.append(reward)
+    self.rewards.append(float(reward))
 
   def discount_rewards(self, reward):
     running_add = 0
@@ -90,8 +90,10 @@ class PG:
       cells_to_click = [x for x in range(0, self.action_size)]
       while not done:
         action = self.act(state, cells_to_click)
-        next_state, reward, done, info = env.step(action)
-        self.remember(state, reward)
+        r = action // self.cols
+        c = action % self.cols
+        next_state, reward, done, info = env.step((r,c))
+        self.remember(state, action, reward)
         state = next_state
         if reward > 0:
           point += reward
