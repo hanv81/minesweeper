@@ -1,6 +1,7 @@
 import gym
 import gym_minesweeper  # must import for create env
 from agent.DQN import DQN
+from agent.PG import PG
 import numpy as np
 import random
 import matplotlib.pyplot as plt
@@ -15,6 +16,16 @@ EPSILON_DECAY = 0.99975
 MIN_EPSILON = 0.001
 
 env = gym.make('minesweeper-v0', rows=ROWS, cols=COLS, mines=MINES)
+
+def trainPG(cnn=False):
+    agent = PG()
+    agent.create_model(ROWS, COLS, cnn)
+    p, avg = agent.train(EPISODES, env)
+    p1, avg1 = play_random(EPISODES)
+    print('------------------ SUMMARY ------------------')
+    print('RANDOM:  max %d avg %1.2f max_avg %1.2f'%( max(p1), avg1[-1], max(avg1)))
+    print('PG:      max %d avg %1.2f max_avg %1.2f'%( max(p), avg[-1], max(avg)))
+    plot(avg1, avg)
 
 def train(cnn=False):
     epsilon = 1
