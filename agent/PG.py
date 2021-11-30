@@ -4,9 +4,6 @@ from tensorflow.keras.optimizers import RMSprop
 from tensorflow import keras
 import numpy as np
 
-REPLAY_MEMORY_SIZE = 50000
-MIN_REPLAY_MEMORY_SIZE = 1000
-BATCH_SIZE = 64
 GAMMA = 0.99
 LR = 0.000025
 
@@ -42,6 +39,9 @@ class PG:
     return self.model.predict(state[None, ...])
 
   def act(self, state, cells_to_click):
+    if len(cells_to_click) == self.action_size:
+      return np.random.randint(0, self.action_size) # first cell -> random
+
     prediction = self.predict(state)[0]
     while True:
       action = np.random.choice(self.action_size, p=prediction)
@@ -103,6 +103,7 @@ class PG:
       self.replay()
       # reset training memory
       self.states, self.actions, self.rewards = [], [], []
+
       p.append(point)
       avg = sum(p)/(episode+1)
       y.append(avg)
