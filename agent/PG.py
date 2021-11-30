@@ -30,7 +30,7 @@ class PG:
     layer = Dense(512, activation='relu')(layer)
     output = Dense(rows * cols, activation='softmax', kernel_initializer='he_uniform')(layer)
     self.model = Model(input, output)
-    self.model.compile(loss='categorical_crossentropy', optimizer=RMSprop(lr=LR))
+    self.model.compile(loss='categorical_crossentropy', optimizer=RMSprop(learning_rate=LR))
 
   def save_model(self):
     self.model.save('pg.h5')
@@ -67,17 +67,17 @@ class PG:
     return discounted_r    
 
   def replay(self):
-    # reshape memory to appropriate shape for training
-    states = np.vstack(self.states)
-    actions = np.vstack(self.actions)
+    if len(self.states) == 1: # bomb on first cell, nothing to train
+      return
+
+    states = np.array(self.states)
+    actions = np.array(self.actions)
 
     # Compute discounted rewards
     discounted_r = self.discount_rewards(self.rewards)
 
     # training PG network
     self.model.fit(states, actions, sample_weight=discounted_r, epochs=1, verbose=0)
-    # reset training memory
-    self.states, self.actions, self.rewards = [], [], []
 
   def train(self, episodes, env):
     y = []
@@ -86,7 +86,6 @@ class PG:
       state = env.reset()
       point = 0
       done = False
-      clicked_cells = []
       cells_to_click = [x for x in range(0, self.action_size)]
       while not done:
         action = self.act(state, cells_to_click)
@@ -99,10 +98,11 @@ class PG:
           point += reward
           for (r,c) in info:
             action = r * self.cols + c
-            clicked_cells.append(action)
             cells_to_click.remove(action)
 
       self.replay()
+      # reset training memory
+      self.states, self.actions, self.rewards = [], [], []
       p.append(point)
       avg = sum(p)/(episode+1)
       y.append(avg)
