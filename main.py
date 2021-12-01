@@ -5,11 +5,12 @@ from agent.PG import PG
 import numpy as np
 import random
 import matplotlib.pyplot as plt
+import argparse
 
 ROWS = 10
 COLS = 10
 MINES = 10
-EPISODES = 100
+
 EPISODES_TEST = 1000
 
 EPSILON_DECAY = 0.99975
@@ -17,24 +18,24 @@ MIN_EPSILON = 0.001
 
 env = gym.make('minesweeper-v0', rows=ROWS, cols=COLS, mines=MINES)
 
-def trainPG(cnn=False):
+def trainPG(episodes, cnn=False):
     agent = PG()
     agent.create_model(ROWS, COLS, cnn)
-    p, avg = agent.train(EPISODES, env)
-    p1, avg1 = play_random(EPISODES)
+    p, avg = agent.train(episodes, env)
+    p1, avg1 = play_random(episodes)
     print('------------------ SUMMARY ------------------')
     print('RANDOM:  max %d avg %1.2f max_avg %1.2f'%( max(p1), avg1[-1], max(avg1)))
     print('PG:      max %d avg %1.2f max_avg %1.2f'%( max(p), avg[-1], max(avg)))
     plot(avg1, avg)
 
-def train(cnn=False):
+def train(episodes, cnn=False):
     epsilon = 1
     agent = DQN()
     agent.create_model(ROWS, COLS, cnn)
 
     avg = []
     pts = []
-    for episode in range(EPISODES):
+    for episode in range(episodes):
         state = env.reset()
         point = 0
         done = False
@@ -107,7 +108,7 @@ def play_random(episodes):
     return p, y
 
 def plot(random_avg, train_avg):
-    x = [xi for xi in range(1, EPISODES+1)]
+    x = [xi for xi in range(1, len(train_avg)+1)]
     plt.figure(figsize=(15,10))
     plt.xlabel('Episode')
     plt.ylabel('Point')
@@ -131,9 +132,9 @@ def plot_test(random_avg, dnn_no_heu_avg, dnn_heu_avg, cnn_no_heu_avg, cnn_heu_a
     plt.title('Average Point')
     plt.savefig('test')
 
-def main():
-    p1, avg1 = play_random(EPISODES)
-    p2, avg2 = train()
+def main(args):
+    p1, avg1 = play_random(args.episodes)
+    p2, avg2 = train(args.episodes)
     print('------------------ SUMMARY ------------------')
     print('RANDOM:  max %d avg %1.2f max_avg %1.2f'%( max(p1), avg1[-1], max(avg1)))
     print('DQN:     max %d avg %1.2f max_avg %1.2f'%( max(p2), avg2[-1], max(avg2)))
@@ -220,6 +221,15 @@ def test(agent, heuristic=False):
 
     return p, y, win
 
+def parseArgs():
+    ''' Reads command line arguments. '''
+    parser = argparse.ArgumentParser(description = 'An AI Agent for Minesweeper.', formatter_class = argparse.ArgumentDefaultsHelpFormatter)
+
+    parser.add_argument('--episodes', type = int, default = '100')
+    args = parser.parse_known_args()[0]
+    return args
+
 if __name__ == "__main__":
-    main()
+    args = parseArgs()
+    main(args)
     # test_agent()
