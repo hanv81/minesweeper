@@ -10,17 +10,18 @@ import argparse
 EPSILON_DECAY = 0.99975
 MIN_EPSILON = 0.001
 
-def trainPG(env, episodes, rows, cols, cnn=False):
+def trainPG(args):
+    env = gym.make('minesweeper-v0', rows=args.rows, cols=args.cols, mines=args.mines)
     agent = PG()
-    agent.create_model(rows, cols, cnn)
-    p, avg = agent.train(episodes, env)
-    p1, avg1 = play_random(episodes)
+    agent.create_model(args.rows, args.cols, args.cnn)
+    p, avg = agent.train(args.episodes, env)
+    p1, avg1 = play_random(env, args.episodes, args.rows, args.cols)
     print('------------------ SUMMARY ------------------')
-    print('RANDOM:  max %d avg %1.2f max_avg %1.2f'%( max(p1), avg1[-1], max(avg1)))
-    print('PG:      max %d avg %1.2f max_avg %1.2f'%( max(p), avg[-1], max(avg)))
+    print('RANDOM:  max %d avg %1.2f' % (max(p1), avg1[-1]))
+    print('PG:      max %d avg %1.2f' % (max(p), avg[-1]))
     plot(avg1, avg)
 
-def train(env, episodes, rows, cols, cnn=False):
+def train(env, episodes, rows, cols, cnn):
     epsilon = 1
     agent = DQN()
     agent.create_model(rows, cols, cnn)
@@ -126,15 +127,15 @@ def plot_test(random_avg, dnn_no_heu_avg, dnn_heu_avg, cnn_no_heu_avg, cnn_heu_a
 def main(args):
     env = gym.make('minesweeper-v0', rows=args.rows, cols=args.cols, mines=args.mines)
     p1, avg1 = play_random(env, args.episodes, args.rows, args.cols)
-    p2, avg2 = train(env, args.episodes, args.rows, args.cols)
+    p2, avg2 = train(env, args.episodes, args.rows, args.cols, args.cnn)
     print('------------------ SUMMARY ------------------')
-    print('RANDOM:  max %d avg %1.2f max_avg %1.2f'%( max(p1), avg1[-1], max(avg1)))
-    print('DQN:     max %d avg %1.2f max_avg %1.2f'%( max(p2), avg2[-1], max(avg2)))
+    print('RANDOM:  max %d avg %1.2f' % (max(p1), avg1[-1]))
+    print('DQN:     max %d avg %1.2f' % (max(p2), avg2[-1]))
     plot(avg1, avg2)
 
 def test_agent(args):
     env = gym.make('minesweeper-v0', rows=args.rows, cols=args.cols, mines=args.mines)
-    p, avg = play_random(args.episodes)
+    p, avg = play_random(env, args.episodes, args.rows, args.cols)
     agent = DQN()
     agent_cnn = DQN()
     agent.load_model('./minesweeper/model/model_' + str(args.rows) + '_' + str(args.cols) + '_' + str(args.mines) + '.h5')
@@ -219,16 +220,21 @@ def parseArgs():
     parser = argparse.ArgumentParser(description = 'An AI Agent for Minesweeper.', formatter_class = argparse.ArgumentDefaultsHelpFormatter)
 
     parser.add_argument('--mode', type = str, default = 'train')
+    parser.add_argument('--algo', type = str, default = 'dqn')
     parser.add_argument('--episodes', type = int, default = 100)
     parser.add_argument('--rows', type = int, default = 10)
     parser.add_argument('--cols', type = int, default = 10)
     parser.add_argument('--mines', type = int, default = 10)
+    parser.add_argument('--cnn', type = bool, default = False)
     args = parser.parse_known_args()[0]
     return args
 
 if __name__ == "__main__":
     args = parseArgs()
     if args.mode == 'train':
-        main(args)
+        if args.algo == 'pg':
+            trainPG(args)
+        else:
+            main(args)
     else:
         test_agent(args)
