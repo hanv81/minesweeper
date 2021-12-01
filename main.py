@@ -16,10 +16,7 @@ def trainPG(args):
     agent.create_model(args.rows, args.cols, args.cnn)
     p, avg = agent.train(args.episodes, env)
     p1, avg1 = play_random(env, args.episodes, args.rows, args.cols)
-    print('------------------ SUMMARY ------------------')
-    print('RANDOM:  max %d avg %1.2f' % (max(p1), avg1[-1]))
-    print('PG:      max %d avg %1.2f' % (max(p), avg[-1]))
-    plot(avg1, avg)
+    show_training_summary('PG', p, avg, p1, avg1)
 
 def train(env, episodes, rows, cols, cnn):
     epsilon = 1
@@ -35,7 +32,7 @@ def train(env, episodes, rows, cols, cnn):
         clicked_cells = []
         cells_to_click = [x for x in range(0, rows * cols)]
         while not done:
-            action = action_policy(agent, state, point, cells_to_click, clicked_cells, epsilon)
+            action = act(agent, state, point, cells_to_click, clicked_cells, epsilon)
             r = action // cols
             c = action % cols
             next_state, reward, done, info = env.step((r,c))
@@ -62,7 +59,7 @@ def train(env, episodes, rows, cols, cnn):
 
     return pts, avg
 
-def action_policy(agent, state, point, cells_to_click, clicked_cells, epsilon):
+def act(agent, state, point, cells_to_click, clicked_cells, epsilon):
     if random.random() <= epsilon or point == 0: # first cell -> just random
         return random.sample(cells_to_click, 1)[0]
     else:
@@ -99,6 +96,12 @@ def play_random(env, episodes, rows, cols):
 
     return pts, avg
 
+def show_training_summary(algo, pts_train, avg_train, pts_ran, avg_ran):
+    print('------------------', algo,'SUMMARY ------------------')
+    print('RANDOM:  max %d avg %1.2f' % (max(pts_ran), avg_ran[-1]))
+    print('TRAIN:   max %d avg %1.2f' % (max(pts_train), avg_train[-1]))
+    plot(avg_ran, avg_train)
+
 def plot(random_avg, train_avg):
     x = [xi for xi in range(1, len(train_avg)+1)]
     plt.figure(figsize=(15,10))
@@ -128,10 +131,7 @@ def main(args):
     env = gym.make('minesweeper-v0', rows=args.rows, cols=args.cols, mines=args.mines)
     p1, avg1 = play_random(env, args.episodes, args.rows, args.cols)
     p2, avg2 = train(env, args.episodes, args.rows, args.cols, args.cnn)
-    print('------------------ SUMMARY ------------------')
-    print('RANDOM:  max %d avg %1.2f' % (max(p1), avg1[-1]))
-    print('DQN:     max %d avg %1.2f' % (max(p2), avg2[-1]))
-    plot(avg1, avg2)
+    show_training_summary(args.algo, p2, avg2, p1, avg1)
 
 def test_agent(args):
     env = gym.make('minesweeper-v0', rows=args.rows, cols=args.cols, mines=args.mines)
