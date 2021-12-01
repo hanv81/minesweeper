@@ -1,15 +1,13 @@
 import gym
-from gym import error, spaces, utils
-from gym.utils import seeding
-from gym.spaces import Discrete,Tuple,Box,MultiDiscrete
+from gym.spaces import Discrete,Tuple,Box
 import numpy as np
 import random
 import sys
 
+UNKNOWN = -1
+MINE = -99
+
 class Minesweeper(gym.Env):
-	metadata = {'render.modes': ['human']}
-	UNKNOWN = -1
-	MINE = -99
 
 	def __init__(self, rows=10, cols=10, mines=10):
 		
@@ -20,7 +18,7 @@ class Minesweeper(gym.Env):
 		self.mines = mines
 		self.clickedCoords = set()
 		self.letter_Axis = ['0','1','2','3','4','5','6','7','8','9','10','11','12','13','14','15','16','17','18','19']
-		self.state = np.full([self.rows, self.cols], Minesweeper.UNKNOWN)
+		self.state = np.full([self.rows, self.cols], UNKNOWN)
 		self.info = dict()
 
 	def conCoord(self, userInput):
@@ -56,7 +54,7 @@ class Minesweeper(gym.Env):
 		self.coord = coord
 		info = []
 		if coord in self.mine_coords:
-		    self.state[coord] = Minesweeper.MINE
+		    self.state[coord] = MINE
 		    self.clickedCoords.add(coord)
 		    done = True
 		elif coord not in self.clickedCoords:
@@ -81,7 +79,7 @@ class Minesweeper(gym.Env):
 		        self.mine_coords.add((r, c))
 		        mines_to_place -= 1
 		# print("MINE locations:", self.mine_coords)
-		self.state = np.full([self.rows, self.cols], Minesweeper.UNKNOWN)
+		self.state = np.full([self.rows, self.cols], UNKNOWN)
 		self.coords_to_clear = self.rows * self.cols - self.mines
 		self.clickedCoords = set()
 		return np.copy(self.state)
@@ -90,9 +88,9 @@ class Minesweeper(gym.Env):
 		for x in range(self.rows):
 			sys.stdout.write(self.letter_Axis[x])
 			for y in range(self.cols):
-				if self.state[x,y] == Minesweeper.MINE:
+				if self.state[x,y] == MINE:
 					sys.stdout.write(' x')
-				elif self.state[x,y] == -1:
+				elif self.state[x,y] == UNKNOWN:
 					sys.stdout.write(' .')
 				elif self.state[x,y] == 0:
 					sys.stdout.write('  ')
