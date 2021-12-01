@@ -32,22 +32,22 @@ def train(cnn=False):
     agent = DQN()
     agent.create_model(ROWS, COLS, cnn)
 
-    y = []
-    p = []
+    avg = []
+    point = []
     for episode in range(EPISODES):
         state = env.reset()
-        point = 0
+        p = 0
         done = False
         clicked_cells = []
         cells_to_click = [x for x in range(0, ROWS * COLS)]
         while not done:
-            action = action_policy(agent, state, point, cells_to_click, clicked_cells, epsilon)
+            action = action_policy(agent, state, p, cells_to_click, clicked_cells, epsilon)
             r = action // COLS
             c = action % COLS
             next_state, reward, done, info = env.step((r,c))
             agent.step((state, action, reward, next_state, done))
             if reward > 0:
-                point += reward
+                p += reward
                 for (r,c) in info:
                     action = r * COLS + c
                     clicked_cells.append(action)
@@ -55,19 +55,18 @@ def train(cnn=False):
             state = next_state
 
         agent.update_target()
-        p.append(point)
-        avg = sum(p)/(episode+1)
-        y.append(avg)
+        point.append(p)
+        avg.append(np.mean(point))
         
         if (episode + 1) % 100 == 0:
-            print("episode %d %d %1.2f"%(episode+1, point, avg))
+            print("episode %d %1.2f"%(episode+1, avg[-1]))
 
         epsilon *= EPSILON_DECAY
         epsilon = max(MIN_EPSILON, epsilon)
 
     agent.save_model()
 
-    return p, y
+    return point, avg
 
 def action_policy(agent, state, point, cells_to_click, clicked_cells, epsilon):
     if random.random() <= epsilon or point == 0: # first cell -> just random
