@@ -11,8 +11,6 @@ ROWS = 10
 COLS = 10
 MINES = 10
 
-EPISODES_TEST = 1000
-
 EPSILON_DECAY = 0.99975
 MIN_EPSILON = 0.001
 
@@ -119,7 +117,7 @@ def plot(random_avg, train_avg):
     plt.savefig('train')
 
 def plot_test(random_avg, dnn_no_heu_avg, dnn_heu_avg, cnn_no_heu_avg, cnn_heu_avg):
-    x = [xi for xi in range(1, EPISODES_TEST+1)]
+    x = [xi for xi in range(1, len(random_avg)+1)]
     plt.figure(figsize=(15,10))
     plt.xlabel('Episode')
     plt.ylabel('Point')
@@ -140,16 +138,16 @@ def main(args):
     print('DQN:     max %d avg %1.2f max_avg %1.2f'%( max(p2), avg2[-1], max(avg2)))
     plot(avg1, avg2)
 
-def test_agent():
-    p, avg = play_random(EPISODES_TEST)
+def test_agent(args):
+    p, avg = play_random(args.episodes)
     agent = DQN()
     agent_cnn = DQN()
     agent.load_model('./minesweeper/model/model_' + str(ROWS) + '_' + str(COLS) + '_' + str(MINES) + '.h5')
     agent_cnn.load_model('./minesweeper/model/model_' + str(ROWS) + '_' + str(COLS) + '_' + str(MINES) + '_cnn.h5')
-    p1, avg1, win1 = test(agent)
-    p2, avg2, win2 = test(agent, heuristic=True)
-    p3, avg3, win3 = test(agent_cnn)
-    p4, avg4, win4 = test(agent_cnn, heuristic=True)
+    p1, avg1, win1 = test(agent, args.episodes)
+    p2, avg2, win2 = test(agent, args.episodes, heuristic=True)
+    p3, avg3, win3 = test(agent_cnn, args.episodes)
+    p4, avg4, win4 = test(agent_cnn, args.episodes, heuristic=True)
     print('------------------ SUMMARY ------------------')
     print('RANDOM:              max %d avg %1.2f max_avg %1.2f' % (max(p), avg[-1], max(avg)))
     print('DQN:                 max %d avg %1.2f max_avg %1.2f win %d' % (max(p1), avg1[-1], max(avg1), win1))
@@ -158,11 +156,11 @@ def test_agent():
     print('DQCNN HEURISTIC:     max %d avg %1.2f max_avg %1.2f win %d' % (max(p4), avg4[-1], max(avg4), win4))
     plot_test(avg, avg1, avg2, avg3, avg4)
 
-def test(agent, heuristic=False):
+def test(agent, episodes, heuristic=False):
     y = []
     p = []
     win = 0
-    for episode in range(EPISODES_TEST):
+    for episode in range(episodes):
         state = env.reset()
         point = 0
         done = False
@@ -225,11 +223,14 @@ def parseArgs():
     ''' Reads command line arguments. '''
     parser = argparse.ArgumentParser(description = 'An AI Agent for Minesweeper.', formatter_class = argparse.ArgumentDefaultsHelpFormatter)
 
+    parser.add_argument('--mode', type = str, default = 'train')
     parser.add_argument('--episodes', type = int, default = '100')
     args = parser.parse_known_args()[0]
     return args
 
 if __name__ == "__main__":
     args = parseArgs()
-    main(args)
-    # test_agent()
+    if args.mode == 'train':
+        main(args)
+    else:
+        test_agent(args)
