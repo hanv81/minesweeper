@@ -5,14 +5,14 @@ from collections import deque
 import random
 import numpy as np
 
-REPLAY_MEMORY_SIZE = 50000
-MIN_REPLAY_MEMORY_SIZE = 1000
-BATCH_SIZE = 64
-GAMMA = 0.99
-
 class DQN:
+  REPLAY_MEMORY_SIZE = 50000
+  MIN_REPLAY_MEMORY_SIZE = 1000
+  BATCH_SIZE = 64
+  GAMMA = 0.99
+
   def __init__(self):
-    self.replay_memory = deque(maxlen=REPLAY_MEMORY_SIZE)
+    self.replay_memory = deque(maxlen=self.REPLAY_MEMORY_SIZE)
 
   def create_model(self, rows, cols, cnn=False):
     input = Input(shape=(rows, cols, 1))
@@ -44,10 +44,10 @@ class DQN:
 
   def step(self, transition):
     self.replay_memory.append(transition)
-    if len(self.replay_memory) < MIN_REPLAY_MEMORY_SIZE:
+    if len(self.replay_memory) < self.MIN_REPLAY_MEMORY_SIZE:
       return
 
-    batch = random.sample(self.replay_memory, BATCH_SIZE)
+    batch = random.sample(self.replay_memory, self.BATCH_SIZE)
     states = np.array([transition[0] for transition in batch])
     qs = self.model.predict(states)
 
@@ -58,8 +58,8 @@ class DQN:
     y = []
 
     for index, (state, action, reward, _, done) in enumerate(batch):
-      qs[index][action] = reward + (1 - int(done)) * GAMMA * np.max(next_qs[index])
+      qs[index][action] = reward + (1 - int(done)) * self.GAMMA * np.max(next_qs[index])
       X.append(state)
       y.append(qs[index])
 
-    self.model.fit(np.array(X), np.array(y), batch_size=BATCH_SIZE, verbose=0)
+    self.model.fit(np.array(X), np.array(y), batch_size=self.BATCH_SIZE, verbose=0)
