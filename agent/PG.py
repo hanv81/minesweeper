@@ -80,8 +80,8 @@ class PG:
     self.model.fit(states, actions, sample_weight=discounted_r, epochs=1, verbose=0)
 
   def train(self, episodes, env):
-    y = []
-    p = []
+    avg = []
+    pts = []
     for episode in range(episodes):
       state = env.reset()
       point = 0
@@ -104,14 +104,13 @@ class PG:
       # reset training memory
       self.states, self.actions, self.rewards = [], [], []
 
-      p.append(point)
-      avg = sum(p)/(episode+1)
-      y.append(avg)
+      pts.append(point)
+      avg.append(np.mean(pts))
       
       if (episode + 1) % 100 == 0:
-          print("episode %d %d %1.2f"%(episode+1, point, avg))
+          print("episode %d %1.2f"%(episode+1, avg[-1]))
 
     env.close()
     self.save_model()
 
-    return p, y
+    return pts, avg
