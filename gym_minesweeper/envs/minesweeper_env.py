@@ -54,6 +54,7 @@ class Minesweeper(gym.Env):
 		self.coord = coord
 		info = []
 		if coord in self.mine_coords:
+		    reward = -10
 		    self.state[coord] = MINE
 		    self.clickedCoords.add(coord)
 		    done = True
