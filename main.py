@@ -131,14 +131,7 @@ def main(args):
     env = gym.make('minesweeper-v0', rows=args.rows, cols=args.cols, mines=args.mines)
     p1, avg1 = play_random(env, args.episodes, args.rows, args.cols)
     p2, avg2 = train(env, args.episodes, args.rows, args.cols, args.cnn)
-<<<<<<< HEAD
     show_training_summary(args.algo, p2, avg2, p1, avg1)
-=======
-    print('------------------ SUMMARY ------------------')
-    print('RANDOM:  max %d avg %1.2f max_avg %1.2f'%( max(p1), avg1[-1], max(avg1)))
-    print('DQN:     max %d avg %1.2f max_avg %1.2f'%( max(p2), avg2[-1], max(avg2)))
-    plot(avg1, avg2)
->>>>>>> 3e47d3d2078c86681756ce58b0a41730a896b456
 
 def test_agent(args):
     env = gym.make('minesweeper-v0', rows=args.rows, cols=args.cols, mines=args.mines)
