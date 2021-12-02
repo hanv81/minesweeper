@@ -1,19 +1,9 @@
 from tensorflow.keras.models import Model
 from tensorflow.keras.layers import Dense, Input, Flatten, Conv2D, MaxPooling2D, Add
 from tensorflow import keras
-from collections import deque
-import random
-import numpy as np
+from agent.DoubleDQN import DoubleDQN
 
-REPLAY_MEMORY_SIZE = 50000
-MIN_REPLAY_MEMORY_SIZE = 1000
-BATCH_SIZE = 64
-GAMMA = 0.99
-
-class DDQN:
-  def __init__(self):
-    self.replay_memory = deque(maxlen=REPLAY_MEMORY_SIZE)
-
+class DDQN(DoubleDQN):
   def create_model(self, rows, cols, cnn=False):
     input = Input(shape=(rows, cols, 1))
     if cnn:
@@ -35,36 +25,3 @@ class DDQN:
 
   def save_model(self):
     self.model.save('ddqn.h5')
-
-  def load_model(self, path):
-    self.model = keras.models.load_model(path)
-
-  def predict(self, state):
-    return self.model.predict(state[None, ...])
-
-  def update_target(self):
-    self.target.set_weights(self.model.get_weights()) 
-
-  def step(self, transition):
-    self.replay_memory.append(transition)
-    if len(self.replay_memory) < MIN_REPLAY_MEMORY_SIZE:
-      return
-
-    batch = random.sample(self.replay_memory, BATCH_SIZE)
-    states = np.array([transition[0] for transition in batch])
-    qs = self.model.predict(states)
-
-    next_states = np.array([transition[3] for transition in batch])
-    next_qs = self.model.predict(next_states)
-    next_qs_target = self.target.predict(next_states)
-
-    X = []
-    y = []
-
-    for index, (state, action, reward, _, done) in enumerate(batch):
-      next_action = np.argmax(next_qs[index])
-      qs[index][action] = reward + (1 - int(done)) * GAMMA * next_qs_target[index][next_action]
-      X.append(state)
-      y.append(qs[index])
-
-    self.model.fit(np.array(X), np.array(y), batch_size=BATCH_SIZE, verbose=0)
