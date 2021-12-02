@@ -68,8 +68,8 @@ class DQN:
 
     self.model.fit(np.array(X), np.array(y), batch_size=self.BATCH_SIZE, verbose=0)
 
-  def act(self, state, point, cells_to_click, clicked_cells, epsilon):
-    if random.random() <= epsilon or point == 0: # first cell -> just random
+  def act(self, state, cells_to_click, clicked_cells, epsilon):
+    if random.random() <= epsilon:
         return random.sample(cells_to_click, 1)[0]
     else:
         qs = self.predict(state)[0]
@@ -92,7 +92,7 @@ class DQN:
         clicked_cells = []
         cells_to_click = [x for x in range(0, self.rows * self.cols)]
         while not done:
-            action = self.act(state, point, cells_to_click, clicked_cells, epsilon)
+            action = self.act(state, cells_to_click, clicked_cells, epsilon)
             r = action // self.cols
             c = action % self.cols
             next_state, reward, done, info = env.step((r,c))
