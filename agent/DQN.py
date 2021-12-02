@@ -10,11 +10,15 @@ class DQN:
   MIN_REPLAY_MEMORY_SIZE = 1000
   BATCH_SIZE = 64
   GAMMA = 0.99
+  EPSILON_DECAY = 0.99975
+  MIN_EPSILON = 0.001
 
   def __init__(self):
     self.replay_memory = deque(maxlen=self.REPLAY_MEMORY_SIZE)
 
   def create_model(self, rows, cols, cnn=False):
+    self.rows = rows
+    self.cols = cols
     input = Input(shape=(rows, cols, 1))
     if cnn:
       self.cnn = True
@@ -63,3 +67,54 @@ class DQN:
       y.append(qs[index])
 
     self.model.fit(np.array(X), np.array(y), batch_size=self.BATCH_SIZE, verbose=0)
+
+  def act(self, state, point, cells_to_click, clicked_cells, epsilon):
+    if random.random() <= epsilon or point == 0: # first cell -> just random
+        return random.sample(cells_to_click, 1)[0]
+    else:
+        qs = self.predict(state)[0]
+        for cell in clicked_cells:
+            qs[cell] = np.min(qs)
+        if np.max(qs) > np.min(qs):
+            return np.argmax(qs)
+
+    return random.sample(cells_to_click, 1)[0]    # no max action, just random
+
+  def train(self, episodes, env):
+    epsilon = 1
+    
+    avg = []
+    pts = []
+    for episode in range(episodes):
+        state = env.reset()
+        point = 0
+        done = False
+        clicked_cells = []
+        cells_to_click = [x for x in range(0, self.rows * self.cols)]
+        while not done:
+            action = self.act(state, point, cells_to_click, clicked_cells, epsilon)
+            r = action // self.cols
+            c = action % self.cols
+            next_state, reward, done, info = env.step((r,c))
+            self.step((state, action, reward, next_state, done))
+            if reward > 0:
+                point += reward
+                for (r,c) in info:
+                    action = r * self.cols + c
+                    clicked_cells.append(action)
+                    cells_to_click.remove(action)
+            state = next_state
+
+        self.update_target()
+        pts.append(point)
+        avg.append(np.mean(pts))
+        
+        if (episode + 1) % 100 == 0:
+            print("episode %d %1.2f"%(episode+1, avg[-1]))
+
+        epsilon *= self.EPSILON_DECAY
+        epsilon = max(self.MIN_EPSILON, epsilon)
+
+    self.save_model()
+
+    return pts, avg

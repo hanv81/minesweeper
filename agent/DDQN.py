@@ -5,6 +5,8 @@ from agent.DoubleDQN import DoubleDQN
 
 class DDQN(DoubleDQN):
   def create_model(self, rows, cols, cnn=False):
+    self.rows = rows
+    self.cols = cols
     input = Input(shape=(rows, cols, 1))
     if cnn:
       self.cnn = True

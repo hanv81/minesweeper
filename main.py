@@ -1,75 +1,13 @@
 import gym
 import gym_minesweeper  # must import for create env
 from agent.DQN import DQN
+from agent.DDQN import DDQN
+from agent.DoubleDQN import DoubleDQN
 from agent.PG import PG
 import numpy as np
 import random
 import matplotlib.pyplot as plt
 import argparse
-
-EPSILON_DECAY = 0.99975
-MIN_EPSILON = 0.001
-
-def trainPG(args):
-    env = gym.make('minesweeper-v0', rows=args.rows, cols=args.cols, mines=args.mines)
-    agent = PG()
-    agent.create_model(args.rows, args.cols, args.cnn)
-    p, avg = agent.train(args.episodes, env)
-    p1, avg1 = play_random(env, args.episodes, args.rows, args.cols)
-    show_training_summary('PG', p, avg, p1, avg1)
-
-def train(env, episodes, rows, cols, cnn):
-    epsilon = 1
-    agent = DQN()
-    agent.create_model(rows, cols, cnn)
-
-    avg = []
-    pts = []
-    for episode in range(episodes):
-        state = env.reset()
-        point = 0
-        done = False
-        clicked_cells = []
-        cells_to_click = [x for x in range(0, rows * cols)]
-        while not done:
-            action = act(agent, state, point, cells_to_click, clicked_cells, epsilon)
-            r = action // cols
-            c = action % cols
-            next_state, reward, done, info = env.step((r,c))
-            agent.step((state, action, reward, next_state, done))
-            if reward > 0:
-                point += reward
-                for (r,c) in info:
-                    action = r * cols + c
-                    clicked_cells.append(action)
-                    cells_to_click.remove(action)
-            state = next_state
-
-        agent.update_target()
-        pts.append(point)
-        avg.append(np.mean(pts))
-        
-        if (episode + 1) % 100 == 0:
-            print("episode %d %1.2f"%(episode+1, avg[-1]))
-
-        epsilon *= EPSILON_DECAY
-        epsilon = max(MIN_EPSILON, epsilon)
-
-    agent.save_model()
-
-    return pts, avg
-
-def act(agent, state, point, cells_to_click, clicked_cells, epsilon):
-    if random.random() <= epsilon or point == 0: # first cell -> just random
-        return random.sample(cells_to_click, 1)[0]
-    else:
-        qs = agent.predict(state)[0]
-        for cell in clicked_cells:
-            qs[cell] = np.min(qs)
-        if np.max(qs) > np.min(qs):
-            return np.argmax(qs)
-
-    return random.sample(cells_to_click, 1)[0]    # no max action, just random
 
 def play_random(env, episodes, rows, cols):
     avg = []
@@ -97,7 +35,7 @@ def play_random(env, episodes, rows, cols):
     return pts, avg
 
 def show_training_summary(algo, pts_train, avg_train, pts_ran, avg_ran):
-    print('------------------', algo,'SUMMARY ------------------')
+    print('------------------', algo.upper(), 'SUMMARY ------------------')
     print('RANDOM:  max %d avg %1.2f' % (max(pts_ran), avg_ran[-1]))
     print('TRAIN:   max %d avg %1.2f' % (max(pts_train), avg_train[-1]))
     plot(avg_ran, avg_train)
@@ -126,12 +64,6 @@ def plot_test(random_avg, dnn_no_heu_avg, dnn_heu_avg, cnn_no_heu_avg, cnn_heu_a
     plt.legend(['Random','DQN','DQN Heuristic', 'DQCNN','DQCNN Heuristic'])
     plt.title('Average Point')
     plt.savefig('test')
-
-def main(args):
-    env = gym.make('minesweeper-v0', rows=args.rows, cols=args.cols, mines=args.mines)
-    p1, avg1 = play_random(env, args.episodes, args.rows, args.cols)
-    p2, avg2 = train(env, args.episodes, args.rows, args.cols, args.cnn)
-    show_training_summary(args.algo, p2, avg2, p1, avg1)
 
 def test_agent(args):
     env = gym.make('minesweeper-v0', rows=args.rows, cols=args.cols, mines=args.mines)
@@ -229,12 +161,24 @@ def parseArgs():
     args = parser.parse_known_args()[0]
     return args
 
-if __name__ == "__main__":
-    args = parseArgs()
+def main(args):
+    env = gym.make('minesweeper-v0', rows=args.rows, cols=args.cols, mines=args.mines)
+    pts_ran, avg_ran = play_random(env, args.episodes, args.rows, args.cols)
     if args.mode == 'train':
-        if args.algo == 'pg':
-            trainPG(args)
+        if args.algo == 'dqn':
+            agent = DQN()
+        elif args.algo == 'doubledqn':
+            agent = DoubleDQN()
+        elif args.algo == 'ddqn':
+            agent = DDQN()
         else:
-            main(args)
+            agent = PG()
+
+        agent.create_model(args.rows, args.cols, args.cnn)
+        pts, avg = agent.train(args.episodes, env)
+        show_training_summary(args.algo, pts, avg, pts_ran, avg_ran)
     else:
         test_agent(args)
+
+if __name__ == "__main__":
+    main(parseArgs())
