@@ -38,15 +38,12 @@ class PG:
   def predict(self, state):
     return self.model.predict(state[None, ...])
 
-  def act(self, state, cells_to_click):
-    if len(cells_to_click) == self.action_size:
+  def act(self, state, point):
+    if point == 0:
       return np.random.randint(0, self.action_size) # first cell -> random
 
     prediction = self.predict(state)[0]
-    while True:
-      action = np.random.choice(self.action_size, p=prediction)
-      if action in cells_to_click:
-        return action
+    return np.random.choice(self.action_size, p=prediction)
 
   def remember(self, state, action, reward):
     self.states.append(state)
@@ -84,21 +81,18 @@ class PG:
     pts = []
     for episode in range(episodes):
       state = env.reset()
-      point = 0
+      step = point = 0
       done = False
-      cells_to_click = [x for x in range(0, self.action_size)]
-      while not done:
-        action = self.act(state, cells_to_click)
+      while not done and step < 30:
+        step += 1
+        action = self.act(state, point)
         r = action // self.cols
         c = action % self.cols
-        next_state, reward, done, info = env.step((r,c))
+        next_state, reward, done, _ = env.step((r,c))
         self.remember(state, action, reward)
         state = next_state
         if reward > 0:
           point += reward
-          for (r,c) in info:
-            action = r * self.cols + c
-            cells_to_click.remove(action)
 
       self.replay()
       # reset training memory
