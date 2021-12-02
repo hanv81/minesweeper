@@ -69,16 +69,14 @@ class DQN:
     self.model.fit(np.array(X), np.array(y), batch_size=self.BATCH_SIZE, verbose=0)
 
   def act(self, state, cells_to_click, clicked_cells, epsilon):
-    if random.random() <= epsilon:
-        return random.sample(cells_to_click, 1)[0]
-    else:
-        qs = self.predict(state)[0]
-        for cell in clicked_cells:
-            qs[cell] = np.min(qs)
-        if np.max(qs) > np.min(qs):
-            return np.argmax(qs)
+    if random.random() > epsilon:
+      qs = self.predict(state)[0]
+      for cell in clicked_cells:
+        qs[cell] = np.min(qs)
+      if np.max(qs) > np.min(qs): # if max = min -> random
+        return np.argmax(qs)
 
-    return random.sample(cells_to_click, 1)[0]    # no max action, just random
+    return random.sample(cells_to_click, 1)[0]
 
   def train(self, episodes, env):
     epsilon = 1
@@ -86,34 +84,34 @@ class DQN:
     avg = []
     pts = []
     for episode in range(episodes):
-        state = env.reset()
-        point = 0
-        done = False
-        clicked_cells = []
-        cells_to_click = [x for x in range(0, self.rows * self.cols)]
-        while not done:
-            action = self.act(state, cells_to_click, clicked_cells, epsilon)
-            r = action // self.cols
-            c = action % self.cols
-            next_state, reward, done, info = env.step((r,c))
-            self.step((state, action, reward, next_state, done))
-            if reward > 0:
-                point += reward
-                for (r,c) in info:
-                    action = r * self.cols + c
-                    clicked_cells.append(action)
-                    cells_to_click.remove(action)
-            state = next_state
+      state = env.reset()
+      point = 0
+      done = False
+      clicked_cells = []
+      cells_to_click = [x for x in range(0, self.rows * self.cols)]
+      while not done:
+        action = self.act(state, cells_to_click, clicked_cells, epsilon)
+        r = action // self.cols
+        c = action % self.cols
+        next_state, reward, done, info = env.step((r,c))
+        self.step((state, action, reward, next_state, done))
+        if reward > 0:
+          point += reward
+          for (r,c) in info:
+            action = r * self.cols + c
+            clicked_cells.append(action)
+            cells_to_click.remove(action)
+        state = next_state
 
-        self.update_target()
-        pts.append(point)
-        avg.append(np.mean(pts))
-        
-        if (episode + 1) % 100 == 0:
-            print("episode %d %1.2f"%(episode+1, avg[-1]))
+      self.update_target()
+      pts.append(point)
+      avg.append(np.mean(pts))
+      
+      if (episode + 1) % 100 == 0:
+        print("episode %d %1.2f"%(episode+1, avg[-1]))
 
-        epsilon *= self.EPSILON_DECAY
-        epsilon = max(self.MIN_EPSILON, epsilon)
+      epsilon *= self.EPSILON_DECAY
+      epsilon = max(self.MIN_EPSILON, epsilon)
 
     self.save_model()
 
