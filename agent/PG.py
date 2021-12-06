@@ -35,14 +35,8 @@ class PG:
   def load_model(self, path):
     self.model = keras.models.load_model(path)
 
-  def predict(self, state):
-    return self.model.predict(state[None, ...])
-
-  def act(self, state, point):
-    if point == 0:
-      return np.random.randint(0, self.action_size) # first cell -> random
-
-    prediction = self.predict(state)[0]
+  def act(self, state):
+    prediction = self.model.predict(state[None, ...])[0]
     return np.random.choice(self.action_size, p=prediction)
 
   def remember(self, state, action, reward):
@@ -84,13 +78,13 @@ class PG:
       step = point = 0
       done = False
       while not done and step < 30:
-        step += 1
-        action = self.act(state, point)
+        action = np.random.randint(0, self.action_size) if step == 0 else self.act(state)
         r = action // self.cols
         c = action % self.cols
         next_state, reward, done, _ = env.step((r,c))
         self.remember(state, action, reward)
         state = next_state
+        step += 1
         if reward > 0:
           point += reward
 
