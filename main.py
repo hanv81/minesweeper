@@ -4,6 +4,7 @@ from agent.DQN import DQN
 from agent.DDQN import DDQN
 from agent.DoubleDQN import DoubleDQN
 from agent.PG import PG
+from agent.A2C import A2C
 import numpy as np
 import random
 import matplotlib.pyplot as plt
@@ -171,6 +172,8 @@ def main(args):
             agent = DoubleDQN()
         elif args.algo == 'ddqn':
             agent = DDQN()
+        elif args.algo == 'a2c':
+            agent = A2C()
         else:
             agent = PG()
 
