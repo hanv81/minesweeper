@@ -21,15 +21,6 @@ class Minesweeper(gym.Env):
 		self.state = np.full([self.rows, self.cols], UNKNOWN)
 		self.info = dict()
 
-	def conCoord(self, userInput):
-		# rows x cols
-		self.cc = userInput
-		firstVal = self.letter_Axis[self.cc[0]]
-		x = str(firstVal)
-		y = str(self.cc[1])
-		xy = x + y
-		return xy
-
 	def scanCoord(self, coord):
 		cells = [coord]
 		neighboring_mines = 0
