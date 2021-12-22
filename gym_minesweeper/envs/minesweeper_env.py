@@ -42,7 +42,6 @@ class Minesweeper(gym.Env):
 	def step(self, coord):
 		done = False
 		reward = 0
-		self.coord = coord
 		info = []
 		if coord in self.mine_coords:
 		    reward = -10
