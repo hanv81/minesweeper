@@ -21,9 +21,7 @@ def play_random(env, episodes, rows, cols):
         cells_to_click = [x for x in range(0, rows * cols)]
         while not done:
             action = random.sample(cells_to_click, 1)[0]
-            r = action // cols
-            c = action % cols
-            _, reward, done, info = env.step((r,c))
+            _, reward, done, info = env.step(action)
             if reward > 0:
                 point += reward
                 for (r,c) in info:
@@ -126,9 +124,8 @@ def test(agent, env, episodes, rows, cols, heuristic=False):
                     action = np.argmax(qs)
                 else:
                     action = random.sample(cells_to_click, 1)[0]
-            r = action // cols
-            c = action % cols
-            next_state, reward, done, info = env.step((r,c))
+
+            next_state, reward, done, info = env.step(action)
             if reward > 0:
                 if done:
                     win += 1

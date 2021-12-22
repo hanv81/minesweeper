@@ -90,9 +90,7 @@ class DQN:
       cells_to_click = [x for x in range(0, self.rows * self.cols)]
       while not done:
         action = self.act(state, cells_to_click, clicked_cells)
-        r = action // self.cols
-        c = action % self.cols
-        next_state, reward, done, info = env.step((r,c))
+        next_state, reward, done, info = env.step(action)
         self.step((state, action, reward, next_state, done))
         if reward > 0:
           point += reward

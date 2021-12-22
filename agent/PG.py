@@ -79,9 +79,7 @@ class PG:
       done = False
       while not done and step < 30:
         action = np.random.randint(0, self.action_size) if step == 0 else self.act(state)
-        r = action // self.cols
-        c = action % self.cols
-        next_state, reward, done, _ = env.step((r,c))
+        next_state, reward, done, _ = env.step(action)
         self.remember(state, action, reward)
         state = next_state
         step += 1

@@ -1,5 +1,5 @@
 import gym
-from gym.spaces import Discrete,Tuple,Box
+from gym.spaces import Discrete, Box
 import numpy as np
 import random
 import sys
@@ -11,7 +11,7 @@ class Minesweeper(gym.Env):
 
 	def __init__(self, rows=10, cols=10, mines=10):
 		
-		self.action_space = Tuple((Discrete(rows),Discrete(cols)))
+		self.action_space = Discrete(rows*cols)
 		self.observation_space = Box(low= -1, high=8, shape=(rows, cols), dtype=np.uint8)
 		self.rows = rows
 		self.cols = cols
@@ -39,7 +39,8 @@ class Minesweeper(gym.Env):
 							cells.extend(self.scanCoord((r,c)))
 		return cells
 
-	def step(self, coord):
+	def step(self, action):
+		coord = (action // self.cols, action % self.cols)
 		done = False
 		reward = 0
 		info = []
