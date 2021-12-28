@@ -130,7 +130,7 @@ def test(agent, env, episodes, rows, cols, heuristic=False):
                 if done:
                     win += 1
                 point += reward
-                for (r,c) in info:
+                for (r,c) in info['coord']:
                     action = r * cols + c
                     clicked_cells.append(action)
                     cells_to_click.remove(action)
