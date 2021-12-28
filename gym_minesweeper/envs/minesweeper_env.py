@@ -25,9 +25,9 @@ class Minesweeper(gym.Env):
 		cells = [coord]
 		neighboring_mines = 0
 		for r in range(coord[0]-1, coord[0]+2):
-		    for c in range(coord[1]-1, coord[1]+2):
-		        if (r,c) in self.mine_coords:
-		            neighboring_mines += 1
+			for c in range(coord[1]-1, coord[1]+2):
+				if (r,c) in self.mine_coords:
+					neighboring_mines += 1
 		self.state[coord] = neighboring_mines
 		self.coords_to_clear -= 1
 
@@ -44,10 +44,10 @@ class Minesweeper(gym.Env):
 		done = False
 		reward = 0
 		if coord in self.mine_coords:
-		    reward = -10
-		    self.state[coord] = MINE
-		    self.clickedCoords.add(coord)
-		    done = True
+			reward = -10
+			self.state[coord] = MINE
+			self.clickedCoords.add(coord)
+			done = True
 		elif coord not in self.clickedCoords:
 			reward = 1
 			self.info['coord'] = self.scanCoord(coord)
@@ -64,11 +64,11 @@ class Minesweeper(gym.Env):
 		self.mine_coords = set()
 		mines_to_place = self.mines
 		while mines_to_place > 0:
-		    r = random.randrange(self.rows)
-		    c = random.randrange(self.cols)
-		    if (r, c) not in self.mine_coords:  # new coord
-		        self.mine_coords.add((r, c))
-		        mines_to_place -= 1
+			r = random.randrange(self.rows)
+			c = random.randrange(self.cols)
+			if (r, c) not in self.mine_coords:  # new coord
+				self.mine_coords.add((r, c))
+				mines_to_place -= 1
 		# print("MINE locations:", self.mine_coords)
 		self.state = np.full([self.rows, self.cols], UNKNOWN)
 		self.coords_to_clear = self.rows * self.cols - self.mines
