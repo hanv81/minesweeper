@@ -43,7 +43,6 @@ class Minesweeper(gym.Env):
 		coord = (action // self.cols, action % self.cols)
 		done = False
 		reward = 0
-		info = []
 		if coord in self.mine_coords:
 		    reward = -10
 		    self.state[coord] = MINE
@@ -51,14 +50,14 @@ class Minesweeper(gym.Env):
 		    done = True
 		elif coord not in self.clickedCoords:
 			reward = 1
-			info = self.scanCoord(coord)
+			self.info['coord'] = self.scanCoord(coord)
 			if self.coords_to_clear == 0:
 				# Win !!!
 				done = True
 			else:
 				self.clickedCoords.add(coord)
 
-		return np.copy(self.state), reward, done, info
+		return np.copy(self.state), reward, done, self.info
 
 	def reset(self):
 		# Internal state: where are all the mines?

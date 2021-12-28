@@ -94,7 +94,7 @@ class DQN:
         self.step((state, action, reward, next_state, done))
         if reward > 0:
           point += reward
-          for (r,c) in info:
+          for (r,c) in info['coord']:
             action = r * self.cols + c
             clicked_cells.append(action)
             cells_to_click.remove(action)
