@@ -24,7 +24,7 @@ def play_random(env, episodes, rows, cols):
             _, reward, done, info = env.step(action)
             if reward > 0:
                 point += reward
-                for (r,c) in info:
+                for (r,c) in info['coord']:
                     action = r * cols + c
                     cells_to_click.remove(action)
 
