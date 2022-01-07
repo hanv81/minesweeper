@@ -113,3 +113,64 @@ class DQN:
     self.save_model()
 
     return pts, avg
+
+  def test(self, env, episodes, heuristic=False):
+    avg = []
+    pts = []
+    win = 0
+    for episode in range(episodes):
+      state = env.reset()
+      point = 0
+      done = False
+      clicked_cells = []
+      cells_to_click = [x for x in range(0, self.rows * self.cols)]
+      while not done:
+        if point == 0: # first cell -> just random
+          action = random.randint(0, self.rows * self.cols - 1)
+        else:
+          mine_cells = []
+          if heuristic:
+            for i in range(self.rows):
+              for j in range(self.cols):
+                if state[i,j] > 0:
+                  neibors = []
+                  neibors_flag = []
+                  for r in range(i-1, i+2):
+                    for c in range(j-1, j+2):
+                      if 0<=r<self.rows and 0<=c<self.cols:
+                        if state[r,c] < 0:
+                          pos = r * self.cols + c
+                          if pos in mine_cells:
+                            neibors_flag.append(pos)
+                          else:
+                            neibors.append(pos)
+                  if state[i,j] == len(neibors) + len(neibors_flag):
+                    for n in neibors:
+                      mine_cells.append(n)
+          qs = self.predict(state)[0]
+          for cell in range(self.rows*self.cols):
+            if cell in clicked_cells or cell in mine_cells:
+              qs[cell] = np.min(qs)
+          if np.max(qs) > np.min(qs):
+            action = np.argmax(qs)
+          else:
+            action = random.sample(cells_to_click, 1)[0]
+
+        next_state, reward, done, info = env.step(action)
+        if reward > 0:
+          if done:
+            win += 1
+          point += reward
+          for (r,c) in info['coord']:
+            action = r * self.cols + c
+            clicked_cells.append(action)
+            cells_to_click.remove(action)
+        state = next_state
+
+      pts.append(point)
+      avg.append(np.mean(pts))
+
+      if (episode + 1) % 100 == 0:
+        print("episode %d %d %1.2f"%(episode+1, point, avg[-1]))
+
+    return pts, avg, win
