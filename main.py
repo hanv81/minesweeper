@@ -50,17 +50,17 @@ def plot(random_avg, train_avg):
     plt.title('Average Point')
     plt.savefig('train')
 
-def plot_test(random_avg, dnn_no_heu_avg, dnn_heu_avg, cnn_no_heu_avg, cnn_heu_avg):
+def plot_test(random_avg, dqn_avg, ddqn_avg, double_dqn_avg):
     x = [xi for xi in range(1, len(random_avg)+1)]
     plt.figure(figsize=(15,10))
     plt.xlabel('Episode')
     plt.ylabel('Point')
     plt.plot(x, random_avg)
-    plt.plot(x, dnn_no_heu_avg)
-    plt.plot(x, dnn_heu_avg)
-    plt.plot(x, cnn_no_heu_avg)
-    plt.plot(x, cnn_heu_avg)
-    plt.legend(['Random','DQN','DQN Heuristic', 'DQCNN','DQCNN Heuristic'])
+    plt.plot(x, dqn_avg)
+    plt.plot(x, ddqn_avg)
+    plt.plot(x, double_dqn_avg)
+
+    plt.legend(['Random','DQN','DDQN Heuristic', 'Double DQN'])
     plt.title('Average Point')
     plt.savefig('test')
 
@@ -69,19 +69,21 @@ def test_agent(args):
     p, avg = play_random(env, args.episodes, args.rows, args.cols)
     dqn = DQN()
     ddqn = DDQN()
+    double_dqn = DoubleDQN()
     dqn.load_model('./minesweeper/model/dqn.h5')
     ddqn.load_model('./minesweeper/model/dueling_double_dqn.h5')
+    double_dqn.load_model('./minesweeper/model/double_dqn.h5')
     p1, avg1, win1 = dqn.test(env, args.episodes, args.rows, args.cols)
-    p2, avg2, win2 = dqn.test(env, args.episodes, args.rows, args.cols, heuristic=True)
-    p3, avg3, win3 = ddqn.test(env, args.episodes, args.rows, args.cols)
-    p4, avg4, win4 = ddqn.test(env, args.episodes, args.rows, args.cols, heuristic=True)
+    p2, avg2, win2 = ddqn.test(env, args.episodes, args.rows, args.cols)
+    p3, avg3, win3 = double_dqn.test(env, args.episodes, args.rows, args.cols)
+
     print('------------------ SUMMARY ------------------')
-    print('RANDOM:          max %d avg %1.2f max_avg %1.2f' % (max(p), avg[-1], max(avg)))
-    print('DQN:             max %d avg %1.2f max_avg %1.2f win %d' % (max(p1), avg1[-1], max(avg1), win1))
-    print('DQN HEURISTIC:   max %d avg %1.2f max_avg %1.2f win %d' % (max(p2), avg2[-1], max(avg2), win2))
-    print('DDQN:            max %d avg %1.2f max_avg %1.2f win %d' % (max(p3), avg3[-1], max(avg3), win3))
-    print('DDQN HEURISTIC:  max %d avg %1.2f max_avg %1.2f win %d' % (max(p4), avg4[-1], max(avg4), win4))
-    plot_test(avg, avg1, avg2, avg3, avg4)
+    print('RANDOM:      max %d avg %1.2f max_avg %1.2f' % (max(p), avg[-1], max(avg)))
+    print('DQN:         max %d avg %1.2f max_avg %1.2f win %d' % (max(p1), avg1[-1], max(avg1), win1))
+    print('DDQN:        max %d avg %1.2f max_avg %1.2f win %d' % (max(p2), avg2[-1], max(avg2), win2))
+    print('Double DQN:  max %d avg %1.2f max_avg %1.2f win %d' % (max(p3), avg3[-1], max(avg3), win3))
+
+    plot_test(avg, avg1, avg2, avg3)
 
 def parseArgs():
     ''' Reads command line arguments. '''
