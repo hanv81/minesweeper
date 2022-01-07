@@ -114,7 +114,7 @@ class DQN:
 
     return pts, avg
 
-  def test(self, env, episodes, heuristic=False):
+  def test(self, env, episodes, rows, cols, heuristic=False):
     avg = []
     pts = []
     win = 0
@@ -123,23 +123,23 @@ class DQN:
       point = 0
       done = False
       clicked_cells = []
-      cells_to_click = [x for x in range(0, self.rows * self.cols)]
+      cells_to_click = [x for x in range(0, rows * cols)]
       while not done:
         if point == 0: # first cell -> just random
-          action = random.randint(0, self.rows * self.cols - 1)
+          action = random.randint(0, rows * cols - 1)
         else:
           mine_cells = []
           if heuristic:
-            for i in range(self.rows):
-              for j in range(self.cols):
+            for i in range(rows):
+              for j in range(cols):
                 if state[i,j] > 0:
                   neibors = []
                   neibors_flag = []
                   for r in range(i-1, i+2):
                     for c in range(j-1, j+2):
-                      if 0<=r<self.rows and 0<=c<self.cols:
+                      if 0<=r<rows and 0<=c<cols:
                         if state[r,c] < 0:
-                          pos = r * self.cols + c
+                          pos = r * cols + c
                           if pos in mine_cells:
                             neibors_flag.append(pos)
                           else:
@@ -148,7 +148,7 @@ class DQN:
                     for n in neibors:
                       mine_cells.append(n)
           qs = self.predict(state)[0]
-          for cell in range(self.rows*self.cols):
+          for cell in range(rows*cols):
             if cell in clicked_cells or cell in mine_cells:
               qs[cell] = np.min(qs)
           if np.max(qs) > np.min(qs):
@@ -162,7 +162,7 @@ class DQN:
             win += 1
           point += reward
           for (r,c) in info['coord']:
-            action = r * self.cols + c
+            action = r * cols + c
             clicked_cells.append(action)
             cells_to_click.remove(action)
         state = next_state
