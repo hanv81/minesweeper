@@ -60,7 +60,7 @@ def plot_test(random_avg, dqn_avg, ddqn_avg, double_dqn_avg):
     plt.plot(x, ddqn_avg)
     plt.plot(x, double_dqn_avg)
 
-    plt.legend(['Random','DQN','DDQN Heuristic', 'Double DQN'])
+    plt.legend(['Random','DQN','DDQN', 'Double DQN'])
     plt.title('Average Point')
     plt.savefig('test')
 
