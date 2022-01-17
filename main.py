@@ -11,7 +11,6 @@ import matplotlib.pyplot as plt
 import argparse
 
 def play_random(env, episodes, rows, cols):
-    avg = []
     pts = []
     print("Random playing ...")
     for _ in range(episodes):
@@ -29,9 +28,8 @@ def play_random(env, episodes, rows, cols):
                     cells_to_click.remove(action)
 
         pts.append(point)
-        avg.append(np.mean(pts))
 
-    return pts, avg
+    return pts
 
 def show_training_summary(algo, pts_train, avg_train, pts_ran, avg_ran):
     print('------------------', algo.upper(), 'SUMMARY ------------------')
@@ -81,7 +79,7 @@ def plot_test(random_avg, random_max, dqn_avg, dqn_max, ddqn_avg, ddqn_max, doub
 
 def test(args):
     env = gym.make('minesweeper-v0', rows=args.rows, cols=args.cols, mines=args.mines)
-    p, avg = play_random(env, args.episodes, args.rows, args.cols)
+    p = play_random(env, args.episodes, args.rows, args.cols)
     dqn = DQN()
     ddqn = DDQN()
     double_dqn = DoubleDQN()
@@ -92,22 +90,22 @@ def test(args):
     pg.load_model('./minesweeper/model/pg.h5')
     pg.action_size = args.rows * args.cols
     print('\nTesting DQN ...')
-    p1, avg1, win1 = dqn.test(env, args.episodes, args.rows, args.cols)
+    p1, win1 = dqn.test(env, args.episodes, args.rows, args.cols)
     print('\nTesting DDQN ...')
-    p2, avg2, win2 = ddqn.test(env, args.episodes, args.rows, args.cols)
+    p2, win2 = ddqn.test(env, args.episodes, args.rows, args.cols)
     print('\nTesting Double DQN ...')
-    p3, avg3, win3 = double_dqn.test(env, args.episodes, args.rows, args.cols)
+    p3, win3 = double_dqn.test(env, args.episodes, args.rows, args.cols)
     print('\nTesting PG ...')
-    p4, avg4, win4 = pg.test(env, args.episodes, args.rows, args.cols)
+    p4, win4 = pg.test(env, args.episodes, args.rows, args.cols)
 
     print('------------------ SUMMARY ------------------')
-    print('RANDOM:      max %d avg %1.2f' % (max(p), avg[-1]))
-    print('DQN:         max %d avg %1.2f win %d' % (max(p1), avg1[-1], win1))
-    print('DDQN:        max %d avg %1.2f win %d' % (max(p2), avg2[-1], win2))
-    print('Double DQN:  max %d avg %1.2f win %d' % (max(p3), avg3[-1], win3))
-    print('PG:          max %d avg %1.2f win %d' % (max(p4), avg4[-1], win4))
+    print('RANDOM:      max %d avg %1.2f' % (max(p), np.mean(p)))
+    print('DQN:         max %d avg %1.2f win %d' % (max(p1), np.mean(p1), win1))
+    print('DDQN:        max %d avg %1.2f win %d' % (max(p2), np.mean(p2), win2))
+    print('Double DQN:  max %d avg %1.2f win %d' % (max(p3), np.mean(p3), win3))
+    print('PG:          max %d avg %1.2f win %d' % (max(p4), np.mean(p4), win4))
 
-    plot_test(avg[-1], max(p), avg1[-1], max(p1), avg2[-1], max(p2), avg3[-1], max(p3), avg4[-1], max(p4))
+    plot_test(np.mean(p), max(p), np.mean(p1), max(p1), np.mean(p2), max(p2), np.mean(p3), max(p3), np.mean(p4), max(p4))
 
 def parseArgs():
     ''' Reads command line arguments. '''

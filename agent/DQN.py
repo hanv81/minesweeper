@@ -115,7 +115,6 @@ class DQN:
     return pts, avg
 
   def test(self, env, episodes, rows, cols, heuristic=False):
-    avg = []
     pts = []
     win = 0
     for episode in range(episodes):
@@ -168,9 +167,8 @@ class DQN:
         state = next_state
 
       pts.append(point)
-      avg.append(np.mean(pts))
 
       if (episode + 1) % 100 == 0:
-        print("episode %d %d %1.2f"%(episode+1, point, avg[-1]))
+        print("episode %d %1.2f"%(episode+1, np.mean(pts)))
 
-    return pts, avg, win
+    return pts, win
