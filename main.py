@@ -50,18 +50,33 @@ def plot(random_avg, train_avg):
     plt.title('Average Point')
     plt.savefig('train')
 
-def plot_test(random_avg, dqn_avg, ddqn_avg, double_dqn_avg):
-    x = [xi for xi in range(1, len(random_avg)+1)]
-    plt.figure(figsize=(15,10))
-    plt.xlabel('Episode')
-    plt.ylabel('Point')
-    plt.plot(x, random_avg)
-    plt.plot(x, dqn_avg)
-    plt.plot(x, ddqn_avg)
-    plt.plot(x, double_dqn_avg)
+def plot_test(random_avg, random_max, dqn_avg, dqn_max, ddqn_avg, ddqn_max, double_dqn_avg, double_dqn_max, pg_avg, pg_max):
+    labels = ['Random', 'DQN', 'DDQN', 'Double DQN', 'PG']
+    avg_pts = [random_avg, dqn_avg, ddqn_avg, double_dqn_avg, pg_avg]
+    max_pts = [random_max, dqn_max, ddqn_max, double_dqn_max, pg_max]
+    x = np.arange(len(labels))
+    width = 0.35
+    fig, ax = plt.subplots()
+    rects1 = ax.bar(x - width/2, avg_pts, width, label='Average Point')
+    rects2 = ax.bar(x + width/2, max_pts, width, label='Maximum Point')
 
-    plt.legend(['Random','DQN','DDQN', 'Double DQN'])
-    plt.title('Average Point')
+    ax.set_ylabel('Scores')
+    ax.set_title('Scores by group and gender')
+    ax.set_xticks(x)
+    ax.set_xticklabels(labels)
+    ax.legend()
+    fig.tight_layout()
+
+    def autolabel(rects):
+        for rect in rects:
+            height = rect.get_height()
+            ax.annotate('{}'.format(height),
+                    xy=(rect.get_x() + rect.get_width() / 2, height), xytext=(0, 3),  # 3 points vertical offset
+                    textcoords="offset points",
+                    ha='center', va='bottom')
+
+    autolabel(rects1)
+    autolabel(rects2)
     plt.savefig('test')
 
 def test(args):
@@ -92,7 +107,7 @@ def test(args):
     print('Double DQN:  max %d avg %1.2f win %d' % (max(p3), avg3[-1], win3))
     print('PG:          max %d avg %1.2f win %d' % (max(p4), avg4[-1], win4))
 
-    plot_test(avg, avg1, avg2, avg3)
+    plot_test(avg[-1], max(p), avg1[-1], max(p1), avg2[-1], max(p2), avg3[-1], max(p3), avg4[-1], max(p4))
 
 def parseArgs():
     ''' Reads command line arguments. '''
