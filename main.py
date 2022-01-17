@@ -64,7 +64,7 @@ def plot_test(random_avg, dqn_avg, ddqn_avg, double_dqn_avg):
     plt.title('Average Point')
     plt.savefig('test')
 
-def test_agent(args):
+def test(args):
     env = gym.make('minesweeper-v0', rows=args.rows, cols=args.cols, mines=args.mines)
     p, avg = play_random(env, args.episodes, args.rows, args.cols)
     dqn = DQN()
@@ -75,17 +75,22 @@ def test_agent(args):
     ddqn.load_model('./minesweeper/model/dueling_double_dqn.h5')
     double_dqn.load_model('./minesweeper/model/double_dqn.h5')
     pg.load_model('./minesweeper/model/pg.h5')
+    pg.action_size = args.rows * args.cols
+    print('\nTesting DQN ...')
     p1, avg1, win1 = dqn.test(env, args.episodes, args.rows, args.cols)
+    print('\nTesting DDQN ...')
     p2, avg2, win2 = ddqn.test(env, args.episodes, args.rows, args.cols)
+    print('\nTesting Double DQN ...')
     p3, avg3, win3 = double_dqn.test(env, args.episodes, args.rows, args.cols)
+    print('\nTesting PG ...')
     p4, avg4, win4 = pg.test(env, args.episodes, args.rows, args.cols)
 
     print('------------------ SUMMARY ------------------')
-    print('RANDOM:      max %d avg %1.2f max_avg %1.2f' % (max(p), avg[-1], max(avg)))
-    print('DQN:         max %d avg %1.2f max_avg %1.2f win %d' % (max(p1), avg1[-1], max(avg1), win1))
-    print('DDQN:        max %d avg %1.2f max_avg %1.2f win %d' % (max(p2), avg2[-1], max(avg2), win2))
-    print('Double DQN:  max %d avg %1.2f max_avg %1.2f win %d' % (max(p3), avg3[-1], max(avg3), win3))
-    print('PG:          max %d avg %1.2f max_avg %1.2f win %d' % (max(p4), avg4[-1], max(avg4), win4))
+    print('RANDOM:      max %d avg %1.2f' % (max(p), avg[-1]))
+    print('DQN:         max %d avg %1.2f win %d' % (max(p1), avg1[-1], win1))
+    print('DDQN:        max %d avg %1.2f win %d' % (max(p2), avg2[-1], win2))
+    print('Double DQN:  max %d avg %1.2f win %d' % (max(p3), avg3[-1], win3))
+    print('PG:          max %d avg %1.2f win %d' % (max(p4), avg4[-1], win4))
 
     plot_test(avg, avg1, avg2, avg3)
 
@@ -122,7 +127,7 @@ def main(args):
         pts, avg = agent.train(args.episodes, env)
         show_training_summary(args.algo, pts, avg, pts_ran, avg_ran)
     else:
-        test_agent(args)
+        test(args)
 
 if __name__ == "__main__":
     main(parseArgs())
