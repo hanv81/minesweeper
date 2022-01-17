@@ -12,6 +12,7 @@ import argparse
 
 def play_random(env, episodes, rows, cols):
     pts = []
+    avg = []
     print("Random playing ...")
     for _ in range(episodes):
         env.reset()
@@ -28,8 +29,9 @@ def play_random(env, episodes, rows, cols):
                     cells_to_click.remove(action)
 
         pts.append(point)
+        avg.append(np.mean(pts))
 
-    return pts
+    return pts, avg
 
 def show_training_summary(algo, pts_train, avg_train, pts_ran, avg_ran):
     print('------------------', algo.upper(), 'SUMMARY ------------------')
@@ -48,10 +50,10 @@ def plot(random_avg, train_avg):
     plt.title('Average Point')
     plt.savefig('train')
 
-def plot_test(random_avg, random_max, dqn_avg, dqn_max, ddqn_avg, ddqn_max, double_dqn_avg, double_dqn_max, pg_avg, pg_max):
-    labels = ['Random', 'DQN', 'DDQN', 'Double DQN', 'PG']
-    avg_pts = [random_avg, dqn_avg, ddqn_avg, double_dqn_avg, pg_avg]
-    max_pts = [random_max, dqn_max, ddqn_max, double_dqn_max, pg_max]
+def plot_test(random_pts, dqn_pts, ddqn_pts, double_dqn_pts, pg_pts, a2c_pts):
+    labels = ['Random', 'DQN', 'DDQN', 'Double DQN', 'PG', 'A2C']
+    avg_pts = [np.mean(random_pts), np.mean(dqn_pts), np.mean(ddqn_pts), np.mean(double_dqn_pts), np.mean(pg_pts), np.mean(a2c_pts)]
+    max_pts = [max(random_pts), max(dqn_pts), max(ddqn_pts), max(double_dqn_pts), max(pg_pts), max(a2c_pts)]
     x = np.arange(len(labels))
     width = 0.35
     fig, ax = plt.subplots()
@@ -79,16 +81,19 @@ def plot_test(random_avg, random_max, dqn_avg, dqn_max, ddqn_avg, ddqn_max, doub
 
 def test(args):
     env = gym.make('minesweeper-v0', rows=args.rows, cols=args.cols, mines=args.mines)
-    p = play_random(env, args.episodes, args.rows, args.cols)
+    p, avg = play_random(env, args.episodes, args.rows, args.cols)
     dqn = DQN()
     ddqn = DDQN()
     double_dqn = DoubleDQN()
     pg = PG()
+    a2c = A2C()
     dqn.load_model('./minesweeper/model/dqn.h5')
     ddqn.load_model('./minesweeper/model/dueling_double_dqn.h5')
     double_dqn.load_model('./minesweeper/model/double_dqn.h5')
     pg.load_model('./minesweeper/model/pg.h5')
+    a2c.load_model('./minesweeper/model/a2c.h5')
     pg.action_size = args.rows * args.cols
+    a2c.action_size = args.rows * args.cols
     print('\nTesting DQN ...')
     p1, win1 = dqn.test(env, args.episodes, args.rows, args.cols)
     print('\nTesting DDQN ...')
@@ -97,15 +102,36 @@ def test(args):
     p3, win3 = double_dqn.test(env, args.episodes, args.rows, args.cols)
     print('\nTesting PG ...')
     p4, win4 = pg.test(env, args.episodes, args.rows, args.cols)
+    print('\nTesting A2C ...')
+    p5, win5 = a2c.test(env, args.episodes, args.rows, args.cols)
 
     print('------------------ SUMMARY ------------------')
-    print('RANDOM:      max %d avg %1.2f' % (max(p), np.mean(p)))
+    print('RANDOM:      max %d avg %1.2f' % (max(p), avg[-1]))
     print('DQN:         max %d avg %1.2f win %d' % (max(p1), np.mean(p1), win1))
     print('DDQN:        max %d avg %1.2f win %d' % (max(p2), np.mean(p2), win2))
     print('Double DQN:  max %d avg %1.2f win %d' % (max(p3), np.mean(p3), win3))
     print('PG:          max %d avg %1.2f win %d' % (max(p4), np.mean(p4), win4))
+    print('A2C:         max %d avg %1.2f win %d' % (max(p5), np.mean(p5), win5))
 
-    plot_test(np.mean(p), max(p), np.mean(p1), max(p1), np.mean(p2), max(p2), np.mean(p3), max(p3), np.mean(p4), max(p4))
+    plot_test(p, p1, p2, p3, p4, p5)
+
+def train(args):
+    if args.algo == 'dqn':
+        agent = DQN()
+    elif args.algo == 'doubledqn':
+        agent = DoubleDQN()
+    elif args.algo == 'ddqn':
+        agent = DDQN()
+    elif args.algo == 'a2c':
+        agent = A2C()
+    else:
+        agent = PG()
+
+    env = gym.make('minesweeper-v0', rows=args.rows, cols=args.cols, mines=args.mines)
+    agent.create_model(args.rows, args.cols, args.cnn)
+    pts_ran, avg_ran = play_random(env, args.episodes, args.rows, args.cols)
+    pts, avg = agent.train(args.episodes, env)
+    show_training_summary(args.algo, pts, avg, pts_ran, avg_ran)
 
 def parseArgs():
     ''' Reads command line arguments. '''
@@ -123,22 +149,7 @@ def parseArgs():
 
 def main(args):
     if args.mode == 'train':
-        if args.algo == 'dqn':
-            agent = DQN()
-        elif args.algo == 'doubledqn':
-            agent = DoubleDQN()
-        elif args.algo == 'ddqn':
-            agent = DDQN()
-        elif args.algo == 'a2c':
-            agent = A2C()
-        else:
-            agent = PG()
-
-        env = gym.make('minesweeper-v0', rows=args.rows, cols=args.cols, mines=args.mines)
-        agent.create_model(args.rows, args.cols, args.cnn)
-        pts_ran, avg_ran = play_random(env, args.episodes, args.rows, args.cols)
-        pts, avg = agent.train(args.episodes, env)
-        show_training_summary(args.algo, pts, avg, pts_ran, avg_ran)
+        train(args)
     else:
         test(args)
 
