@@ -70,18 +70,22 @@ def test_agent(args):
     dqn = DQN()
     ddqn = DDQN()
     double_dqn = DoubleDQN()
+    pg = PG()
     dqn.load_model('./minesweeper/model/dqn.h5')
     ddqn.load_model('./minesweeper/model/dueling_double_dqn.h5')
     double_dqn.load_model('./minesweeper/model/double_dqn.h5')
+    pg.load_model('./minesweeper/model/pg.h5')
     p1, avg1, win1 = dqn.test(env, args.episodes, args.rows, args.cols)
     p2, avg2, win2 = ddqn.test(env, args.episodes, args.rows, args.cols)
     p3, avg3, win3 = double_dqn.test(env, args.episodes, args.rows, args.cols)
+    p4, avg4, win4 = pg.test(env, args.episodes, args.rows, args.cols)
 
     print('------------------ SUMMARY ------------------')
     print('RANDOM:      max %d avg %1.2f max_avg %1.2f' % (max(p), avg[-1], max(avg)))
     print('DQN:         max %d avg %1.2f max_avg %1.2f win %d' % (max(p1), avg1[-1], max(avg1), win1))
     print('DDQN:        max %d avg %1.2f max_avg %1.2f win %d' % (max(p2), avg2[-1], max(avg2), win2))
     print('Double DQN:  max %d avg %1.2f max_avg %1.2f win %d' % (max(p3), avg3[-1], max(avg3), win3))
+    print('PG:          max %d avg %1.2f max_avg %1.2f win %d' % (max(p4), avg4[-1], max(avg4), win4))
 
     plot_test(avg, avg1, avg2, avg3)
 

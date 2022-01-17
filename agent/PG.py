@@ -2,6 +2,7 @@ from tensorflow.keras.models import Model
 from tensorflow.keras.layers import Dense, Input, Flatten, Conv2D, MaxPooling2D
 from tensorflow.keras.optimizers import RMSprop
 from tensorflow import keras
+import random
 import numpy as np
 
 GAMMA = 0.99
@@ -100,3 +101,52 @@ class PG:
     self.save_model()
 
     return pts, avg
+
+  def test(self, env, episodes, rows, cols, heuristic=False):
+    avg = []
+    pts = []
+    win = 0
+    for episode in range(episodes):
+      state = env.reset()
+      point = 0
+      done = False
+      while not done:
+        if point == 0: # first cell -> just random
+          action = random.randint(0, rows * cols - 1)
+        else:
+          mine_cells = []
+          if heuristic:
+            for i in range(rows):
+              for j in range(cols):
+                if state[i,j] > 0:
+                  neibors = []
+                  neibors_flag = []
+                  for r in range(i-1, i+2):
+                    for c in range(j-1, j+2):
+                      if 0<=r<rows and 0<=c<cols:
+                        if state[r,c] < 0:
+                          pos = r * cols + c
+                          if pos in mine_cells:
+                            neibors_flag.append(pos)
+                          else:
+                            neibors.append(pos)
+                  if state[i,j] == len(neibors) + len(neibors_flag):
+                    for n in neibors:
+                      mine_cells.append(n)
+          action = self.act(state)
+
+        next_state, reward, done, _ = env.step(action)
+        if reward > 0:
+          point += reward
+          if done:
+            win += 1
+
+        state = next_state
+
+      pts.append(point)
+      avg.append(np.mean(pts))
+
+      if (episode + 1) % 100 == 0:
+        print("episode %d %d %1.2f"%(episode+1, point, avg[-1]))
+
+    return pts, avg, win
