@@ -145,6 +145,6 @@ class PG:
       pts.append(point)
 
       if (episode + 1) % 100 == 0:
-        print("episode %d %d %1.2f"%(episode+1, np.mean(pts)))
+        print("episode %d %1.2f"%(episode+1, np.mean(pts)))
 
     return pts, win
