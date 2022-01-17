@@ -58,8 +58,8 @@ def plot_test(random_avg, random_max, dqn_avg, dqn_max, ddqn_avg, ddqn_max, doub
     rects1 = ax.bar(x - width/2, avg_pts, width, label='Average Point')
     rects2 = ax.bar(x + width/2, max_pts, width, label='Maximum Point')
 
-    ax.set_ylabel('Scores')
-    ax.set_title('Scores by group and gender')
+    ax.set_ylabel('Points')
+    ax.set_title('Test Result')
     ax.set_xticks(x)
     ax.set_xticklabels(labels)
     ax.legend()
