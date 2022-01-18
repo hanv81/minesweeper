@@ -1,6 +1,7 @@
 from tensorflow.keras.models import Model
 from tensorflow.keras.layers import Dense, Input, Flatten, Conv2D, MaxPooling2D
 from tensorflow.keras.optimizers import RMSprop
+from tensorflow import keras
 import numpy as np
 from agent.PG import PG
 
@@ -35,6 +36,9 @@ class A2C(PG):
 
   def save_model(self):
     self.Actor.save('a2c.h5')
+
+  def load_model(self, path):
+    self.Actor = keras.models.load_model(path)
 
   def act(self, state):
     prediction = self.Actor.predict(state[None, ...])[0]
