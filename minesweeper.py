@@ -3,6 +3,7 @@ import pygame
 from agent.DoubleDQN import DoubleDQN
 import numpy as np
 import time
+import random
 
 MINE = 9
 SIZE = 25
@@ -211,7 +212,7 @@ def game(rows, cols, bombs, agent):
                         for j in range(cols):
                             if not lst[j][j].visible and not lst[i][j].flag:
                                 cells_to_click.append(lst[i][j])
-                    square = np.random.sample(cells_to_click, 1)[0]
+                    square = random.sample(cells_to_click, 1)[0]
 
             if not square.flag:
                 if square.val == MINE:
@@ -344,11 +345,11 @@ def heuristic(lst):
     return lst
 
 def main():
-    rows=10
-    cols=10
-    bombs=10
+    rows = 10
+    cols = 10
+    bombs = 10
     agent = DoubleDQN()
-    agent.load_model('./minesweeper/model/model_' + str(rows) + '_' + str(cols) + '_' +str(bombs) + '_cnn.h5')
+    agent.load_model('./minesweeper/model/double_dqn.h5')
     game(rows, cols, bombs, agent)
 
 if __name__ == "__main__":
