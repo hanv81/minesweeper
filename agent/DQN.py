@@ -89,9 +89,10 @@ class DQN:
       clicked_cells = []
       cells_to_click = [x for x in range(0, self.rows * self.cols)]
       while not done:
-        action = self.act(state, cells_to_click, clicked_cells)
+        action = random.randint(0, self.rows*self.cols-1) if point == 0 else self.act(state, cells_to_click, clicked_cells)
         next_state, reward, done, info = env.step(action)
-        self.step((state, action, reward, next_state, done))
+        if point > 0: # point = 0 -> first cell, just random, nothing to learn
+          self.step((state, action, reward, next_state, done))
         if reward > 0:
           point += reward
           for (r,c) in info['coord']:
