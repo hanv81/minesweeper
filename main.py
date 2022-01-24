@@ -37,16 +37,16 @@ def show_training_summary(algo, pts_train, avg_train, pts_ran, avg_ran):
     print('------------------', algo.upper(), 'SUMMARY ------------------')
     print('RANDOM:  max %d avg %1.2f' % (max(pts_ran), avg_ran[-1]))
     print('TRAIN:   max %d avg %1.2f' % (max(pts_train), avg_train[-1]))
-    plot(avg_ran, avg_train)
+    plot(algo, avg_ran, avg_train)
 
-def plot(random_avg, train_avg):
+def plot(algo, random_avg, train_avg):
     x = [xi for xi in range(1, len(train_avg)+1)]
     plt.figure(figsize=(15,10))
     plt.xlabel('Episode')
     plt.ylabel('Point')
     plt.plot(x, random_avg)
     plt.plot(x, train_avg)
-    plt.legend(['Random','DQN'])
+    plt.legend(['Random', algo.upper()])
     plt.title('Average Point')
     plt.savefig('train')
 
@@ -88,7 +88,7 @@ def test(args):
     pg = PG()
     a2c = A2C()
     dqn.load_model('./minesweeper/model/dqn.h5')
-    ddqn.load_model('./minesweeper/model/dueling_double_dqn.h5')
+    ddqn.load_model('./minesweeper/model/ddqn.h5')
     double_dqn.load_model('./minesweeper/model/double_dqn.h5')
     pg.load_model('./minesweeper/model/pg.h5')
     a2c.load_model('./minesweeper/model/a2c.h5')
