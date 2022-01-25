@@ -1,5 +1,6 @@
 import torch
 import torch.nn as nn
+import torch.optim as optim
 import torch.nn.functional as F
 from collections import deque
 import random
@@ -20,7 +21,7 @@ class Net(nn.Module):
         x = self.fc2(x)
         return x
 
-class DQN:
+class DQNTorch:
     REPLAY_MEMORY_SIZE = 50000
     MIN_REPLAY_MEMORY_SIZE = 1000
     BATCH_SIZE = 64
@@ -35,8 +36,11 @@ class DQN:
     def create_model(self, rows, cols, cnn=False):
         self.rows = rows
         self.cols = cols
-        self.model = Net(rows, cols, cnn)
-        self.target = Net(rows, cols, cnn)
+        self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
+        self.model = Net(rows, cols, cnn).to(self.device)
+        self.target = Net(rows, cols, cnn).to(self.device)
+        self.optimizer = optim.Adam(self.model.parameters(), lr=1e-6)
+        self.criterion = nn.MSELoss()
 
     def save_model(self):
         torch.save(self.model.state_dict(), 'dqn_torch.h5')
@@ -46,7 +50,7 @@ class DQN:
         self.model.eval()
 
     def predict(self, state):
-        return self.model(state)[0]
+        return self.model(state)
 
     def update_target(self):
         self.target.load_state_dict(self.model.state_dict())
@@ -57,29 +61,29 @@ class DQN:
             return
 
         batch = random.sample(self.replay_memory, self.BATCH_SIZE)
-        states = np.array([transition[0] for transition in batch])
-        qs = self.model(states)
-
-        next_states = np.array([transition[3] for transition in batch])
+        states = torch.cat(tuple(transition[0] for trasition in batch))
+        actions = torch.cat(tuple(transition[1] for trasition in batch))
+        rewards = torch.cat(tuple(transition[2] for trasition in batch))
+        next_states = torch.cat(tuple(transition[3] for trasition in batch))
+        dones = torch.cat(tuple(transition[4] for trasition in batch))
+        qs = torch.sum(self.model(states) * actions, dim=1)
         next_qs = self.target(next_states)
 
-        X = []
-        y = []
-
-        for index, (state, action, reward, _, done) in enumerate(batch):
-            qs[index][action] = reward + (1 - int(done)) * self.GAMMA * np.max(next_qs[index])
-            X.append(state)
-            y.append(qs[index])
-
-        self.model.fit(np.array(X), np.array(y), batch_size=self.BATCH_SIZE, verbose=0)
+        qs_target = torch.cat(tuple(rewards[i] + (1-int(dones[i])) * self.GAMMA * torch.max(next_qs[i]) for i in range(len(batch))))
+        self.optimizer.zero_grad()
+        qs_target = qs_target.detach()
+        loss = self.criterion(qs, qs_target)
+        loss.backward()
+        self.optimizer.step()
 
     def act(self, state, cells_to_click, clicked_cells):
         if random.random() > self.epsilon:
-            qs = self.predict(state)[0]
-        for cell in clicked_cells:
-            qs[cell] = np.min(qs)
-        if np.max(qs) > np.min(qs): # if max = min -> random
-            return np.argmax(qs)
+            state_ts = torch.from_numpy(state).type(torch.FloatTensor).unsqueeze(0)
+            qs = self.predict(state_ts)[0]
+            for cell in clicked_cells:
+                qs[cell] = torch.min(qs)
+            if torch.max(qs) > torch.min(qs): # if max = min -> random
+                return torch.argmax(qs).item()
 
         return random.sample(cells_to_click, 1)[0]
 
@@ -95,8 +99,17 @@ class DQN:
             while not done:
                 action = random.randint(0, self.rows*self.cols-1) if point == 0 else self.act(state, cells_to_click, clicked_cells)
                 next_state, reward, done, info = env.step(action)
+
                 if point > 0: # point = 0 -> first cell, just random, nothing to learn
-                    self.step((state, action, reward, next_state, done))
+                    action_ts = torch.zeros([self.rows*self.cols], dtype=torch.float32)
+                    action_ts[action] = 1
+                    action_ts = action_ts.unsqueeze(0)
+                    state_ts = torch.from_numpy(state).type(torch.FloatTensor).unsqueeze(0)
+                    next_state_ts = torch.from_numpy(next_state).type(torch.FloatTensor).unsqueeze(0)
+                    reward_ts = torch.Tensor([reward]).unsqueeze(0).to(self.device)
+                    done_ts = torch.Tensor([done]).unsqueeze(0).to(self.device)
+                    self.step((state_ts, action_ts, reward_ts, next_state_ts, done_ts))
+
                 if reward > 0:
                     point += reward
                     for (r,c) in info['coord']:
