@@ -5,6 +5,7 @@ from agent.DDQN import DDQN
 from agent.DoubleDQN import DoubleDQN
 from agent.PG import PG
 from agent.A2C import A2C
+from agent.DQN_Torch import DQNTorch
 import numpy as np
 import random
 import matplotlib.pyplot as plt
@@ -118,6 +119,8 @@ def test(args):
 def train(args):
     if args.algo == 'dqn':
         agent = DQN()
+    elif args.algo == 'dqntorch':
+        agent = DQNTorch()
     elif args.algo == 'doubledqn':
         agent = DoubleDQN()
     elif args.algo == 'ddqn':
