@@ -78,8 +78,7 @@ class DQNTorch:
 
     def act(self, state, cells_to_click, clicked_cells):
         if random.random() > self.epsilon:
-            state_ts = torch.from_numpy(state).type(torch.FloatTensor).unsqueeze(0)
-            qs = self.predict(state_ts)[0]
+            qs = self.predict(torch.from_numpy(state).type(torch.FloatTensor).unsqueeze(0).to(self.device))[0]
             for cell in clicked_cells:
                 qs[cell] = torch.min(qs)
             if torch.max(qs) > torch.min(qs): # if max = min -> random
@@ -103,9 +102,9 @@ class DQNTorch:
                 if point > 0: # point = 0 -> first cell, just random, nothing to learn
                     action_ts = torch.zeros([self.rows*self.cols], dtype=torch.float32)
                     action_ts[action] = 1
-                    action_ts = action_ts.unsqueeze(0)
-                    state_ts = torch.from_numpy(state).type(torch.FloatTensor).unsqueeze(0)
-                    next_state_ts = torch.from_numpy(next_state).type(torch.FloatTensor).unsqueeze(0)
+                    action_ts = action_ts.unsqueeze(0).to(self.device)
+                    state_ts = torch.from_numpy(state).type(torch.FloatTensor).unsqueeze(0).to(self.device)
+                    next_state_ts = torch.from_numpy(next_state).type(torch.FloatTensor).unsqueeze(0).to(self.device)
                     reward_ts = torch.Tensor([reward]).unsqueeze(0).to(self.device)
                     done_ts = torch.Tensor([done]).unsqueeze(0).to(self.device)
                     self.step((state_ts, action_ts, reward_ts, next_state_ts, done_ts))
