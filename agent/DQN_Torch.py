@@ -5,6 +5,7 @@ import torch.nn.functional as F
 from collections import deque
 import random
 import numpy as np
+from agent.DQN import DQN
 
 class Net(nn.Module):
     def __init__(self, rows, cols, cnn):
@@ -21,18 +22,7 @@ class Net(nn.Module):
         x = self.fc2(x)
         return x
 
-class DQNTorch:
-    REPLAY_MEMORY_SIZE = 50000
-    MIN_REPLAY_MEMORY_SIZE = 1000
-    BATCH_SIZE = 64
-    GAMMA = 0.99
-    EPSILON_DECAY = 0.99975
-    MIN_EPSILON = 0.001
-    epsilon = 1
-
-    def __init__(self):
-        self.replay_memory = deque(maxlen=self.REPLAY_MEMORY_SIZE)
-
+class DQNTorch(DQN):
     def create_model(self, rows, cols, cnn=False):
         self.rows = rows
         self.cols = cols
