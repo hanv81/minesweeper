@@ -56,12 +56,13 @@ class DQNTorch(DQN):
         rewards = torch.cat(tuple(transition[2] for trasition in batch))
         next_states = torch.cat(tuple(transition[3] for trasition in batch))
         dones = torch.cat(tuple(transition[4] for trasition in batch))
-        qs = torch.sum(self.model(states) * actions, dim=1)
-        next_qs = self.target(next_states)
 
+        next_qs = self.target(next_states)
         qs_target = torch.cat(tuple(rewards[i] + (1-int(dones[i])) * self.GAMMA * torch.max(next_qs[i]) for i in range(len(batch))))
-        self.optimizer.zero_grad()
         qs_target = qs_target.detach()
+        qs = torch.sum(self.model(states) * actions, dim=1)
+
+        self.optimizer.zero_grad()
         loss = self.criterion(qs, qs_target)
         loss.backward()
         self.optimizer.step()
