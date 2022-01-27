@@ -2,6 +2,7 @@ from tensorflow.keras.models import Model
 from tensorflow.keras.layers import Dense, Input, Flatten, Conv2D, MaxPooling2D
 from tensorflow.keras.optimizers import RMSprop
 from tensorflow import keras
+from tqdm import tqdm
 import random
 import numpy as np
 
@@ -105,7 +106,7 @@ class PG:
   def test(self, env, episodes, rows, cols, heuristic=False):
     pts = []
     win = 0
-    for episode in range(episodes):
+    for _ in tqdm(range(episodes)):
       state = env.reset()
       point = 0
       done = False
@@ -121,7 +122,5 @@ class PG:
 
       pts.append(point)
 
-      if (episode + 1) % 100 == 0:
-        print("episode %d %1.2f"%(episode+1, np.mean(pts)))
-
+    print('max %d avg %1.2f win %d' % (max(pts), np.mean(pts), win))
     return pts, win

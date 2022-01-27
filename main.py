@@ -6,6 +6,7 @@ from agent.DoubleDQN import DoubleDQN
 from agent.PG import PG
 from agent.A2C import A2C
 from agent.DQN_Torch import DQNTorch
+from tqdm import tqdm
 import numpy as np
 import random
 import matplotlib.pyplot as plt
@@ -15,7 +16,7 @@ def play_random(env, episodes, rows, cols):
     pts = []
     avg = []
     print("Random playing ...")
-    for _ in range(episodes):
+    for _ in tqdm(range(episodes)):
         env.reset()
         point = 0
         done = False
@@ -82,7 +83,6 @@ def plot_test(random_pts, dqn_pts, ddqn_pts, double_dqn_pts, pg_pts, a2c_pts):
 
 def test(args):
     env = gym.make('minesweeper-v0', rows=args.rows, cols=args.cols, mines=args.mines)
-    p, avg = play_random(env, args.episodes, args.rows, args.cols)
     dqn = DQN()
     ddqn = DDQN()
     double_dqn = DoubleDQN()
@@ -95,6 +95,7 @@ def test(args):
     a2c.load_model('./minesweeper/model/a2c.h5')
     pg.action_size = args.rows * args.cols
     a2c.action_size = args.rows * args.cols
+    p, avg = play_random(env, args.episodes, args.rows, args.cols)
     print('\nTesting DQN ...')
     p1, win1 = dqn.test(env, args.episodes, args.rows, args.cols)
     print('\nTesting DDQN ...')
@@ -106,7 +107,7 @@ def test(args):
     print('\nTesting A2C ...')
     p5, win5 = a2c.test(env, args.episodes, args.rows, args.cols)
 
-    print('------------------ SUMMARY ------------------')
+    print('\n------------------ SUMMARY ------------------')
     print('RANDOM:      max %d avg %1.2f' % (max(p), avg[-1]))
     print('DQN:         max %d avg %1.2f win %d' % (max(p1), np.mean(p1), win1))
     print('DDQN:        max %d avg %1.2f win %d' % (max(p2), np.mean(p2), win2))

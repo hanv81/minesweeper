@@ -2,6 +2,7 @@ from tensorflow.keras.models import Model
 from tensorflow.keras.layers import Dense, Input, Flatten, Conv2D, MaxPooling2D
 from tensorflow import keras
 from collections import deque
+from tqdm import tqdm
 import random
 import numpy as np
 
@@ -119,7 +120,7 @@ class DQN:
     pts = []
     win = 0
     self.epsilon = 0 # exploit only
-    for episode in range(episodes):
+    for _ in tqdm(range(episodes), desc='Testing...'):
       state = env.reset()
       point = 0
       done = False
@@ -140,7 +141,5 @@ class DQN:
 
       pts.append(point)
 
-      if (episode + 1) % 100 == 0:
-        print("episode %d %1.2f"%(episode+1, np.mean(pts)))
-
+    print('max %d avg %1.2f win %d' % (max(pts), np.mean(pts), win))
     return pts, win
