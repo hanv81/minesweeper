@@ -70,7 +70,7 @@ class DQN:
     self.model.fit(np.array(X), np.array(y), batch_size=self.BATCH_SIZE, verbose=0)
 
   def act(self, state, cells_to_click, clicked_cells):
-    if random.random() > self.epsilon:
+    if random.random() >= self.epsilon:
       qs = self.predict(state)[0]
       for cell in clicked_cells:
         qs[cell] = np.min(qs)
@@ -118,6 +118,7 @@ class DQN:
   def test(self, env, episodes, rows, cols, heuristic=False):
     pts = []
     win = 0
+    self.epsilon = 0 # exploit only
     for episode in range(episodes):
       state = env.reset()
       point = 0
@@ -125,15 +126,7 @@ class DQN:
       clicked_cells = []
       cells_to_click = [x for x in range(0, rows * cols)]
       while not done:
-        if point == 0: # first cell -> just random
-          action = random.randint(0, rows * cols - 1)
-        else:
-          qs = self.predict(state)[0]
-          for cell in range(rows*cols):
-            if cell in clicked_cells:
-              qs[cell] = np.min(qs)
-          action = np.argmax(qs) if np.max(qs) > np.min(qs) else random.sample(cells_to_click, 1)[0]
-
+        action = random.randint(0, rows * cols - 1) if point == 0 else self.act(state, cells_to_click, clicked_cells)
         next_state, reward, done, info = env.step(action)
         if reward > 0:
           if done:
