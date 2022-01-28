@@ -5,7 +5,7 @@ import time
 import random
 
 MINE = 9
-SIZE = 25
+HEURISTIC = True
 PATH = './game/image/'
 GREY = pygame.image.load(PATH + 'grey.png')
 ZERO = pygame.image.load(PATH + '0.png')
@@ -23,7 +23,7 @@ BOOM = pygame.image.load(PATH + 'boom.png')
 GLASSES = pygame.image.load(PATH + 'sun-glasses.png')
 SAD = pygame.image.load(PATH + 'sun-sad.png')
 NUMBERS = [ZERO, ONE, TWO, THREE, FOUR, FIVE, SIX, SEVEN, EIGHT, BOMB]
-HEURISTIC = True
+SIZE = GREY.get_width()
 
 def create_table(rows, cols, bombs):
     def check_down_left(table, x, y):
@@ -106,46 +106,12 @@ class Square:
 def open_square(lst, square):
     square.visible = True
     i, j = square.i, square.j
-    if i+1 < len(lst):
-        if not lst[i+1][j].visible and not lst[i+1][j].flag:
-            lst[i+1][j].visible = True
-            if lst[i+1][j].val == 0:
-                open_square(lst, lst[i+1][j])
-        if j+1 < len(lst[0]):
-            if not lst[i+1][j+1].visible and not lst[i+1][j+1].flag:
-                lst[i+1][j+1].visible = True
-                if lst[i+1][j+1].val == 0:
-                    open_square(lst, lst[i+1][j+1])
-        if j-1 >= 0:
-            if not lst[i+1][j-1].visible and not lst[i+1][j-1].flag:
-                lst[i+1][j-1].visible = True
-                if lst[i+1][j-1].val == 0:
-                    open_square(lst, lst[i+1][j-1])
-    if i-1 >= 0:
-        if not lst[i-1][j].visible and not lst[i-1][j].flag:
-            lst[i-1][j].visible = True
-            if lst[i-1][j].val == 0:
-                open_square(lst, lst[i-1][j])
-        if j+1 < len(lst[0]):
-            if not lst[i-1][j+1].visible and not lst[i-1][j+1].flag:
-                lst[i-1][j+1].visible = True
-                if lst[i-1][j+1].val == 0:
-                    open_square(lst, lst[i-1][j+1])
-        if j-1 >= 0:
-            if not lst[i-1][j-1].visible and not lst[i-1][j-1].flag:
-                lst[i-1][j-1].visible = True
-                if lst[i-1][j-1].val == 0:
-                    open_square(lst, lst[i-1][j-1])
-    if j-1 >= 0:
-        if not lst[i][j-1].visible and not lst[i][j-1].flag:
-            lst[i][j-1].visible = True
-            if lst[i][j-1].val == 0:
-                open_square(lst, lst[i][j-1])
-    if j+1 < len(lst[0]):
-        if not lst[i][j+1].visible and not lst[i][j+1].flag:
-            lst[i][j+1].visible = True
-            if lst[i][j+1].val == 0:
-                open_square(lst, lst[i][j+1])
+    if square.val == 0:
+        ij = [(i, j+1), (i, j-1), (i+1, j), (i+1, j+1), (i+1, j-1), (i-1, j), (i-1, j+1), (i-1, j-1)]
+        for (i,j) in ij:
+            if 0 <= i < len(lst) and 0 <= j < len(lst[0]):
+                if not lst[i][j].visible and not lst[i][j].flag:
+                    open_square(lst, lst[i][j])
 
 def start(rows, cols, bombs, agent):
     table = create_table(rows, cols, bombs)
@@ -212,8 +178,6 @@ def start(rows, cols, bombs, agent):
                     run = False
                 else:
                     point += 1
-                square.visible = True
-                if square.val == 0:
                     open_square(lst, square)
             time.sleep(1)
 
@@ -243,8 +207,6 @@ def start(rows, cols, bombs, agent):
                                             run = False
                                         else:
                                             point += 1
-                                        j.visible = True
-                                        if j.val == 0:
                                             open_square(lst, j)
 
                                 elif event.button == 3: # RIGHT CLICK
