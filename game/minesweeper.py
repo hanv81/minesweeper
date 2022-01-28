@@ -94,9 +94,9 @@ def start(rows, cols, mines, agent):
                 action = 0
                 for i in squares:
                     row = []
-                    for j in i:
-                        if j.visible or j.flag:
-                            row.append(j.val)
+                    for square in i:
+                        if square.visible or square.flag:
+                            row.append(square.val)
                             clicked.append(action)
                         else:
                             row.append(-1)
@@ -145,34 +145,34 @@ def start(rows, cols, mines, agent):
                 elif event.type == pygame.MOUSEBUTTONDOWN:
                     r = pygame.rect.Rect(pygame.mouse.get_pos(), (1,1))
                     for i in squares:
-                        for j in i:
-                            if j.rect.colliderect(r):
+                        for square in i:
+                            if square.rect.colliderect(r):
                                 if event.button == 1:   # LEFT CLICK
-                                    if not j.flag:
-                                        if j.val == MINE:
+                                    if not square.flag:
+                                        if square.val == MINE:
                                             print('BOMBS')
-                                            boom_cell = j
+                                            boom_cell = square
                                             run = False
                                         else:
                                             point += 1
-                                            open_square(squares, j)
+                                            open_square(squares, square)
 
                                 elif event.button == 3: # RIGHT CLICK
-                                    if not j.visible:
-                                        j.flag = not j.flag
+                                    if not square.visible:
+                                        square.flag = not square.flag
 
         for i in squares:
-            for j in i:
-                if j.visible:
-                    screen.blit(NUMBERS[j.val], (j.x, j.y))
-                if j.flag:
-                    screen.blit(FLAG, (j.x, j.y))
-                if not j.flag and not j.visible:
-                    screen.blit(GREY, (j.x, j.y))
+            for square in i:
+                if square.visible:
+                    screen.blit(NUMBERS[square.val], (square.x, square.y))
+                if square.flag:
+                    screen.blit(FLAG, (square.x, square.y))
+                if not square.flag and not square.visible:
+                    screen.blit(GREY, (square.x, square.y))
         cnt = 0
         for i in squares:
-            for j in i:
-                if j.visible and j.val != MINE:
+            for square in i:
+                if square.visible and square.val != MINE:
                     cnt += 1
         if cnt == rows * cols - mines:
             run, win = False, True
@@ -182,16 +182,16 @@ def start(rows, cols, mines, agent):
     print('point:', point)
     if win:
         for i in squares:
-            for j in i:
-                if not j.visible:
-                    screen.blit(FLAG, (j.x, j.y))
+            for square in i:
+                if not square.visible:
+                    screen.blit(FLAG, (square.x, square.y))
         width, height = GLASSES.get_rect().size
         screen.blit(GLASSES, ((w-width)//2, (h-height)//2))
     else:
         for i in squares:
-            for j in i:
-                if j.val == MINE:
-                    screen.blit(BOMB, (j.x, j.y))
+            for square in i:
+                if square.val == MINE:
+                    screen.blit(BOMB, (square.x, square.y))
         width, height = SAD.get_rect().size
         screen.blit(BOOM, (boom_cell.x, boom_cell.y))
         screen.blit(SAD, ((w-width)//2, (h-height)//2))
