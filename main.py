@@ -89,11 +89,11 @@ def test(args):
     double_dqn = DoubleDQN()
     pg = PG()
     a2c = A2C()
-    dqn.load_model('./minesweeper/model/dqn.h5')
-    ddqn.load_model('./minesweeper/model/ddqn.h5')
-    double_dqn.load_model('./minesweeper/model/double_dqn.h5')
-    pg.load_model('./minesweeper/model/pg.h5')
-    a2c.load_model('./minesweeper/model/a2c.h5')
+    dqn.load_model('./model/dqn.h5')
+    ddqn.load_model('./model/ddqn.h5')
+    double_dqn.load_model('./model/double_dqn.h5')
+    pg.load_model('./model/pg.h5')
+    a2c.load_model('./model/a2c.h5')
     pg.action_size = args.rows * args.cols
     a2c.action_size = args.rows * args.cols
     p, avg = play_random(env, args.episodes, args.rows, args.cols)
@@ -139,7 +139,25 @@ def train(args):
     show_training_summary(args.algo, pts, avg, pts_ran, avg_ran)
 
 def play(args):
-    play_game()
+    if args.algo == 'dqn':
+        agent = DQN()
+        agent.load_model('./model/dqn.h5')
+    elif args.algo == 'dqntorch':
+        agent = DQNTorch()
+        agent.load_model('./model/dqn_torch.h5')
+    elif args.algo == 'doubledqn':
+        agent = DoubleDQN()
+        agent.load_model('./model/double_dqn.h5')
+    elif args.algo == 'ddqn':
+        agent = DDQN()
+        agent.load_model('./model/ddqn.h5')
+    elif args.algo == 'a2c':
+        agent = A2C()
+        agent.load_model('./model/a2c.h5')
+    else:
+        agent = PG()
+        agent.load_model('./model/pg.h5')
+    play_game(agent, args.rows, args.cols, args.mines)
 
 def parseArgs():
     ''' Reads command line arguments. '''

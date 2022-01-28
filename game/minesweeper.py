@@ -1,6 +1,5 @@
 from random import randint
 import pygame
-from agent.DoubleDQN import DoubleDQN
 import numpy as np
 import time
 import random
@@ -108,7 +107,7 @@ class Square:
         self.rect = pygame.rect.Rect(self.x, self.y, w, h)
 
 def restart(rows, cols, bombs, agent):
-    game(rows, cols, bombs, agent)
+    start(rows, cols, bombs, agent)
 
 def open_square(lst, square):
     square.visible = True
@@ -154,7 +153,7 @@ def open_square(lst, square):
             if lst[i][j+1].val == 0:
                 open_square(lst, lst[i][j+1])
 
-def game(rows, cols, bombs, agent):
+def start(rows, cols, bombs, agent):
     table = create_table(rows, cols, bombs)
 
     w = cols * SIZE
@@ -344,11 +343,6 @@ def heuristic(lst):
     time.sleep(0.5)
     return lst
 
-def play_game():
+def play_game(agent, rows, cols, mines):
     pygame.init()
-    rows = 10
-    cols = 10
-    bombs = 10
-    agent = DoubleDQN()
-    agent.load_model('./model/double_dqn.h5')
-    game(rows, cols, bombs, agent)
+    start(rows, cols, mines, agent)
