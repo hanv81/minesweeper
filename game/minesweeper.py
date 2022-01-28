@@ -120,11 +120,11 @@ def start(rows, cols, bombs, agent):
     h = rows * SIZE
     screen = pygame.display.set_mode((w,h))
 
-    lst = [[] for _ in range(rows)]
+    squares = [[] for _ in range(rows)]
     for i in range(rows):
         for j in range(cols):
             square = Square(i, j, SIZE, SIZE, table[i][j])
-            lst[i] += [square]
+            squares[i] += [square]
             screen.blit(GREY, (square.x, square.y))
 
     run, win, auto = True, False, False
@@ -136,15 +136,15 @@ def start(rows, cols, bombs, agent):
             clicked = []
             if point == 0:
                 action = randint(0, rows * cols - 1)
-                i = action // len(lst[0])
-                j = action % len(lst[0])
-                square = lst[i][j]
+                i = action // len(squares[0])
+                j = action % len(squares[0])
+                square = squares[i][j]
             else:
                 if HEURISTIC:
-                    lst = heuristic(lst)
+                    squares = heuristic(squares)
 
                 action = 0
-                for i in lst:
+                for i in squares:
                     row = []
                     for j in i:
                         if j.visible or j.flag:
@@ -159,16 +159,16 @@ def start(rows, cols, bombs, agent):
                     qs[cell] = np.min(qs)
                 if np.max(qs) > np.min(qs):
                     action = np.argmax(qs)
-                    i = action // len(lst[0])
-                    j = action % len(lst[0])
-                    square = lst[i][j]
+                    i = action // len(squares[0])
+                    j = action % len(squares[0])
+                    square = squares[i][j]
                 else:
                     print('no max q, just random')
                     cells_to_click = []
                     for i in range(rows):
                         for j in range(cols):
-                            if not lst[j][j].visible and not lst[i][j].flag:
-                                cells_to_click.append(lst[i][j])
+                            if not squares[j][j].visible and not squares[i][j].flag:
+                                cells_to_click.append(squares[i][j])
                     square = random.sample(cells_to_click, 1)[0]
 
             if not square.flag:
@@ -178,7 +178,7 @@ def start(rows, cols, bombs, agent):
                     run = False
                 else:
                     point += 1
-                    open_square(lst, square)
+                    open_square(squares, square)
             time.sleep(1)
 
         else:   # user play
@@ -196,7 +196,7 @@ def start(rows, cols, bombs, agent):
                         pygame.quit()
                 elif event.type == pygame.MOUSEBUTTONDOWN:
                     r = pygame.rect.Rect(pygame.mouse.get_pos(), (1,1))
-                    for i in lst:
+                    for i in squares:
                         for j in i:
                             if j.rect.colliderect(r):
                                 if event.button == 1:   # LEFT CLICK
@@ -207,13 +207,13 @@ def start(rows, cols, bombs, agent):
                                             run = False
                                         else:
                                             point += 1
-                                            open_square(lst, j)
+                                            open_square(squares, j)
 
                                 elif event.button == 3: # RIGHT CLICK
                                     if not j.visible:
                                         j.flag = not j.flag
 
-        for i in lst:
+        for i in squares:
             for j in i:
                 if j.visible:
                     screen.blit(NUMBERS[j.val], (j.x, j.y))
@@ -222,7 +222,7 @@ def start(rows, cols, bombs, agent):
                 if not j.flag and not j.visible:
                     screen.blit(GREY, (j.x, j.y))
         cnt = 0
-        for i in lst:
+        for i in squares:
             for j in i:
                 if j.visible and j.val != MINE:
                     cnt += 1
@@ -233,14 +233,14 @@ def start(rows, cols, bombs, agent):
 
     print('point:', point)
     if win:
-        for i in lst:
+        for i in squares:
             for j in i:
                 if not j.visible:
                     screen.blit(FLAG, (j.x, j.y))
         width, height = GLASSES.get_rect().size
         screen.blit(GLASSES, ((w-width)//2, (h-height)//2))
     else:
-        for i in lst:
+        for i in squares:
             for j in i:
                 if j.val == MINE:
                     screen.blit(BOMB, (j.x, j.y))
