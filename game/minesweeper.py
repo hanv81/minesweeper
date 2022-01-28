@@ -110,42 +110,42 @@ def open_square(lst, square):
     square.visible = True
     i, j = square.i, square.j
     if i+1 < len(lst):
-        if lst[i+1][j].visible == False and lst[i+1][j].flag == False:
+        if not lst[i+1][j].visible and not lst[i+1][j].flag:
             lst[i+1][j].visible = True
             if lst[i+1][j].val == 0:
                 open_square(lst, lst[i+1][j])
         if j+1 < len(lst[0]):
-            if lst[i+1][j+1].visible == False and lst[i+1][j+1].flag == False:
+            if not lst[i+1][j+1].visible and not lst[i+1][j+1].flag:
                 lst[i+1][j+1].visible = True
                 if lst[i+1][j+1].val == 0:
                     open_square(lst, lst[i+1][j+1])
         if j-1 >= 0:
-            if lst[i+1][j-1].visible == False and lst[i+1][j-1].flag == False:
+            if not lst[i+1][j-1].visible and not lst[i+1][j-1].flag:
                 lst[i+1][j-1].visible = True
                 if lst[i+1][j-1].val == 0:
                     open_square(lst, lst[i+1][j-1])
     if i-1 >= 0:
-        if lst[i-1][j].visible == False and lst[i-1][j].flag == False:
+        if not lst[i-1][j].visible and not lst[i-1][j].flag:
             lst[i-1][j].visible = True
             if lst[i-1][j].val == 0:
                 open_square(lst, lst[i-1][j])
         if j+1 < len(lst[0]):
-            if lst[i-1][j+1].visible == False and lst[i-1][j+1].flag == False:
+            if not lst[i-1][j+1].visible and not lst[i-1][j+1].flag:
                 lst[i-1][j+1].visible = True
                 if lst[i-1][j+1].val == 0:
                     open_square(lst, lst[i-1][j+1])
         if j-1 >= 0:
-            if lst[i-1][j-1].visible == False and lst[i-1][j-1].flag == False:
+            if not lst[i-1][j-1].visible and not lst[i-1][j-1].flag:
                 lst[i-1][j-1].visible = True
                 if lst[i-1][j-1].val == 0:
                     open_square(lst, lst[i-1][j-1])
     if j-1 >= 0:
-        if lst[i][j-1].visible == False and lst[i][j-1].flag == False:
+        if not lst[i][j-1].visible and not lst[i][j-1].flag:
             lst[i][j-1].visible = True
             if lst[i][j-1].val == 0:
                 open_square(lst, lst[i][j-1])
     if j+1 < len(lst[0]):
-        if lst[i][j+1].visible == False and lst[i][j+1].flag == False:
+        if not lst[i][j+1].visible and not lst[i][j+1].flag:
             lst[i][j+1].visible = True
             if lst[i][j+1].val == 0:
                 open_square(lst, lst[i][j+1])
