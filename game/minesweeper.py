@@ -164,14 +164,8 @@ def start(rows, cols, mines, agent):
                                     if not square.visible:
                                         square.flag = not square.flag
 
-        for row in squares:
-            for square in row:
-                if square.visible:
-                    screen.blit(NUMBERS[square.val], (square.x, square.y))
-                if square.flag:
-                    screen.blit(FLAG, (square.x, square.y))
-                if not square.flag and not square.visible:
-                    screen.blit(GREY, (square.x, square.y))
+        paint(squares, screen)
+
         cnt = 0
         for row in squares:
             for square in row:
@@ -180,11 +174,21 @@ def start(rows, cols, mines, agent):
         if cnt == rows * cols - mines:
             run, win = False, True
             print('WIN')
-        pygame.display.update()
 
     print('point:', point)
     show_result(squares, screen, boom_cell, win)
     listen_event(rows, cols, mines, agent)
+
+def paint(squares, screen):
+    for row in squares:
+        for square in row:
+            if square.visible:
+                screen.blit(NUMBERS[square.val], (square.x, square.y))
+            if square.flag:
+                screen.blit(FLAG, (square.x, square.y))
+            if not square.flag and not square.visible:
+                screen.blit(GREY, (square.x, square.y))
+    pygame.display.update()
 
 def show_result(squares, screen, boom_cell, win):
     if win:
