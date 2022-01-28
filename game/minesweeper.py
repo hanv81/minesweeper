@@ -61,7 +61,7 @@ def open_square(lst, square):
                 if not lst[i][j].visible and not lst[i][j].flag:
                     open_square(lst, lst[i][j])
 
-def start(rows, cols, mines, agent):
+def create_squares_n_screen(rows, cols, mines):
     table = create_table(rows, cols, mines)
 
     w = cols * SIZE
@@ -74,6 +74,11 @@ def start(rows, cols, mines, agent):
             square = Square(i, j, SIZE, SIZE, table[i][j])
             squares[i] += [square]
             screen.blit(GREY, (square.x, square.y))
+
+    return squares, screen
+
+def start(rows, cols, mines, agent):
+    squares, screen = create_squares_n_screen(rows, cols, mines)
 
     run, win, auto = True, False, False
     boom_cell = None
@@ -178,17 +183,17 @@ def start(rows, cols, mines, agent):
         pygame.display.update()
 
     print('point:', point)
-    show_result(squares, screen, boom_cell, w, h, win)
+    show_result(squares, screen, boom_cell, win)
     listen_event(rows, cols, mines, agent)
 
-def show_result(squares, screen, boom_cell, w, h, win):
+def show_result(squares, screen, boom_cell, win):
     if win:
         for row in squares:
             for square in row:
                 if not square.visible:
                     screen.blit(FLAG, (square.x, square.y))
         width, height = GLASSES.get_rect().size
-        screen.blit(GLASSES, ((w-width)//2, (h-height)//2))
+        screen.blit(GLASSES, ((screen.get_width()-width)//2, (screen.get_height()-height)//2))
     else:
         for row in squares:
             for square in row:
@@ -196,7 +201,7 @@ def show_result(squares, screen, boom_cell, w, h, win):
                     screen.blit(BOMB, (square.x, square.y))
         width, height = SAD.get_rect().size
         screen.blit(BOOM, (boom_cell.x, boom_cell.y))
-        screen.blit(SAD, ((w-width)//2, (h-height)//2))
+        screen.blit(SAD, ((screen.get_width()-width)//2, (screen.get_height()-height)//2))
     pygame.display.update()
 
 def listen_event(rows, cols, mines, agent):
