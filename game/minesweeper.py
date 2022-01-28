@@ -25,74 +25,22 @@ SAD = pygame.image.load(PATH + 'sun-sad.png')
 NUMBERS = [ZERO, ONE, TWO, THREE, FOUR, FIVE, SIX, SEVEN, EIGHT, BOMB]
 SIZE = GREY.get_width()
 
-def create_table(rows, cols, bombs):
-    def check_down_left(table, x, y):
-        if x+1 < len(table) and y-1 >= 0:
-            if table[x+1][y-1] != MINE:
-                table[x+1][y-1] += 1
-        return table
-
-    def check_down_right(table, x, y):
-        if x+1 < len(table) and y+1 < len(table[0]):
-            if table[x+1][y+1] != MINE:
-                table[x+1][y+1] += 1
-        return table
-
-    def check_up_left(table, x, y):
-        if x-1 >= 0 and y-1 >= 0:
-            if table[x-1][y-1] != MINE:
-                table[x-1][y-1] += 1
-        return table
-
-    def check_up_right(table, x, y):
-        if x-1 >= 0 and y+1 < len(table[0]):
-            if table[x-1][y+1] != MINE:
-                table[x-1][y+1] += 1
-        return table
-
-    def check_up(table, x, y):
-        if x-1 >= 0:
-            if table[x-1][y] != MINE:
-                table[x-1][y] += 1
-        return table
-
-    def check_down(table, x, y):
-        if x+1 < len(table):
-            if table[x+1][y] != MINE:
-                table[x+1][y] += 1
-        return table
-
-    def check_left(table, x, y):
-        if y-1 >= 0:
-            if table[x][y-1] != MINE:
-                table[x][y-1] += 1
-        return table
-
-    def check_right(table, x, y):
-        if y+1 < len(table[0]):
-            if table[x][y+1] != MINE:
-                table[x][y+1] += 1
-        return table
-
+def create_table(rows, cols, mines):
     table = [[0] * cols for _ in range(rows)]
-    for i in range(bombs):
-        while True:
-            x = randint(0, len(table)-1)
-            y = randint(0, len(table[0])-1)
-            if table[x][y] != MINE:
-                table[x][y] = MINE
-                break
+    while mines > 0:
+        x = randint(0, len(table)-1)
+        y = randint(0, len(table[0])-1)
+        if table[x][y] != MINE:
+            table[x][y] = MINE
+            mines -= 1
+
     for i in range(rows):
         for j in range(cols):
-            if table[i][j] == MINE:
-                table = check_down_left(table, i, j)
-                table = check_down_right(table, i, j)
-                table = check_down(table, i, j)
-                table = check_up_left(table, i, j)
-                table = check_up_right(table, i, j)
-                table = check_up(table, i, j)
-                table = check_left(table, i, j)
-                table = check_right(table, i, j)
+            if table[i][j] != MINE:
+                ij = [(i, j+1), (i, j-1), (i+1, j), (i+1, j+1), (i+1, j-1), (i-1, j), (i-1, j+1), (i-1, j-1)]
+                for (ii, jj) in ij:
+                    if 0 <= ii < len(table) and 0 <= jj < len(table[0]) and table[ii][jj] == MINE:
+                        table[i][j] += 1
     return table
 
 class Square:
@@ -113,8 +61,8 @@ def open_square(lst, square):
                 if not lst[i][j].visible and not lst[i][j].flag:
                     open_square(lst, lst[i][j])
 
-def start(rows, cols, bombs, agent):
-    table = create_table(rows, cols, bombs)
+def start(rows, cols, mines, agent):
+    table = create_table(rows, cols, mines)
 
     w = cols * SIZE
     h = rows * SIZE
@@ -188,7 +136,7 @@ def start(rows, cols, bombs, agent):
                     pygame.quit()
                 elif event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_r:
-                        start(rows, cols, bombs, agent)
+                        start(rows, cols, mines, agent)
                     elif event.key == pygame.K_a:
                         auto = True
                     elif event.key == pygame.K_ESCAPE:
@@ -226,7 +174,7 @@ def start(rows, cols, bombs, agent):
             for j in i:
                 if j.visible and j.val != MINE:
                     cnt += 1
-        if cnt == rows * cols - bombs:
+        if cnt == rows * cols - mines:
             run, win = False, True
             print('WIN')
         pygame.display.update()
@@ -258,14 +206,14 @@ def start(rows, cols, bombs, agent):
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_r:
                     run = False
-                    start(rows, cols, bombs, agent)
+                    start(rows, cols, mines, agent)
                 elif event.key == pygame.K_ESCAPE:
                     run = False
                     pygame.quit()
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 run = False
                 if event.button == 1:   # LEFT CLICK
-                    start(rows, cols, bombs, agent)
+                    start(rows, cols, mines, agent)
                 else:
                     pygame.quit()
 
