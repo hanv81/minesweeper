@@ -7,7 +7,7 @@ import random
 
 MINE = 9
 SIZE = 25
-PATH = './minesweeper/image/'
+PATH = './game/image/'
 GREY = pygame.image.load(PATH + 'grey.png')
 ZERO = pygame.image.load(PATH + '0.png')
 ONE = pygame.image.load(PATH + '1.png')
@@ -344,14 +344,11 @@ def heuristic(lst):
     time.sleep(0.5)
     return lst
 
-def main():
+def play_game():
+    pygame.init()
     rows = 10
     cols = 10
     bombs = 10
     agent = DoubleDQN()
-    agent.load_model('./minesweeper/model/double_dqn.h5')
+    agent.load_model('./model/double_dqn.h5')
     game(rows, cols, bombs, agent)
-
-if __name__ == "__main__":
-    pygame.init()
-    main()

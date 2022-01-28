@@ -6,6 +6,7 @@ from agent.DoubleDQN import DoubleDQN
 from agent.PG import PG
 from agent.A2C import A2C
 from agent.DQN_Torch import DQNTorch
+from game.minesweeper import play_game
 from tqdm import tqdm
 import numpy as np
 import random
@@ -138,7 +139,7 @@ def train(args):
     show_training_summary(args.algo, pts, avg, pts_ran, avg_ran)
 
 def play(args):
-    pass
+    play_game()
 
 def parseArgs():
     ''' Reads command line arguments. '''
