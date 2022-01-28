@@ -26,7 +26,55 @@ NUMBERS = [ZERO, ONE, TWO, THREE, FOUR, FIVE, SIX, SEVEN, EIGHT, BOMB]
 HEURISTIC = True
 
 def create_table(rows, cols, bombs):
-    table = [[0] * cols for i in range(rows)]
+    def check_down_left(table, x, y):
+        if x+1 < len(table) and y-1 >= 0:
+            if table[x+1][y-1] != MINE:
+                table[x+1][y-1] += 1
+        return table
+
+    def check_down_right(table, x, y):
+        if x+1 < len(table) and y+1 < len(table[0]):
+            if table[x+1][y+1] != MINE:
+                table[x+1][y+1] += 1
+        return table
+
+    def check_up_left(table, x, y):
+        if x-1 >= 0 and y-1 >= 0:
+            if table[x-1][y-1] != MINE:
+                table[x-1][y-1] += 1
+        return table
+
+    def check_up_right(table, x, y):
+        if x-1 >= 0 and y+1 < len(table[0]):
+            if table[x-1][y+1] != MINE:
+                table[x-1][y+1] += 1
+        return table
+
+    def check_up(table, x, y):
+        if x-1 >= 0:
+            if table[x-1][y] != MINE:
+                table[x-1][y] += 1
+        return table
+
+    def check_down(table, x, y):
+        if x+1 < len(table):
+            if table[x+1][y] != MINE:
+                table[x+1][y] += 1
+        return table
+
+    def check_left(table, x, y):
+        if y-1 >= 0:
+            if table[x][y-1] != MINE:
+                table[x][y-1] += 1
+        return table
+
+    def check_right(table, x, y):
+        if y+1 < len(table[0]):
+            if table[x][y+1] != MINE:
+                table[x][y+1] += 1
+        return table
+
+    table = [[0] * cols for _ in range(rows)]
     for i in range(bombs):
         while True:
             x = randint(0, len(table)-1)
@@ -47,63 +95,12 @@ def create_table(rows, cols, bombs):
                 table = check_right(table, i, j)
     return table
 
-def check_down_left(table, x, y):
-    if x+1 < len(table) and y-1 >= 0:
-        if table[x+1][y-1] != MINE:
-            table[x+1][y-1] += 1
-    return table
-
-def check_down_right(table, x, y):
-    if x+1 < len(table) and y+1 < len(table[0]):
-        if table[x+1][y+1] != MINE:
-            table[x+1][y+1] += 1
-    return table
-
-def check_up_left(table, x, y):
-    if x-1 >= 0 and y-1 >= 0:
-        if table[x-1][y-1] != MINE:
-            table[x-1][y-1] += 1
-    return table
-
-def check_up_right(table, x, y):
-    if x-1 >= 0 and y+1 < len(table[0]):
-        if table[x-1][y+1] != MINE:
-            table[x-1][y+1] += 1
-    return table
-
-def check_up(table, x, y):
-    if x-1 >= 0:
-        if table[x-1][y] != MINE:
-            table[x-1][y] += 1
-    return table
-
-def check_down(table, x, y):
-    if x+1 < len(table):
-        if table[x+1][y] != MINE:
-            table[x+1][y] += 1
-    return table
-
-def check_left(table, x, y):
-    if y-1 >= 0:
-        if table[x][y-1] != MINE:
-            table[x][y-1] += 1
-    return table
-
-def check_right(table, x, y):
-    if y+1 < len(table[0]):
-        if table[x][y+1] != MINE:
-            table[x][y+1] += 1
-    return table
-
 class Square:
     def __init__(self, i, j, w, h, val):
-        self.i = i
-        self.j = j
-        self.x = j*w
-        self.y = i*h
+        self.i, self.j = i, j
+        self.x, self.y = j*w, i*h
         self.val = val
-        self.visible = False
-        self.flag = False
+        self.visible, self.flag = False, False
         self.rect = pygame.rect.Rect(self.x, self.y, w, h)
 
 def open_square(lst, square):
@@ -157,17 +154,15 @@ def start(rows, cols, bombs, agent):
     h = rows * SIZE
     screen = pygame.display.set_mode((w,h))
 
-    lst = [[] for i in range(rows)]
+    lst = [[] for _ in range(rows)]
     for i in range(rows):
         for j in range(cols):
             square = Square(i, j, SIZE, SIZE, table[i][j])
             lst[i] += [square]
             screen.blit(GREY, (square.x, square.y))
 
-    run = True
-    win = False
+    run, win, auto = True, False, False
     boom_cell = None
-    auto = False
     point = 0
     while run:
         if auto:    # agent play
@@ -270,8 +265,7 @@ def start(rows, cols, bombs, agent):
                 if j.visible and j.val != MINE:
                     cnt += 1
         if cnt == rows * cols - bombs:
-            run = False
-            win = True
+            run, win = False, True
             print('WIN')
         pygame.display.update()
 
@@ -314,8 +308,7 @@ def start(rows, cols, bombs, agent):
                     pygame.quit()
 
 def heuristic(lst):
-    rows = len(lst)
-    cols = len(lst[0])
+    rows, cols = len(lst), len(lst[0])
     for i in range(rows):
         for j in range(cols):
             if not lst[i][j].visible:
@@ -324,8 +317,7 @@ def heuristic(lst):
         for j in range(cols):
             square = lst[i][j]
             if square.visible and square.val > 0:  # square is open
-                neibors = []
-                neibors_flag = []
+                neibors, neibors_flag = [], []
                 for r in range(i-1, i+2):
                     for c in range(j-1, j+2):
                         if 0<=r<rows and 0<=c<cols:
