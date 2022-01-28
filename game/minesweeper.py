@@ -84,8 +84,7 @@ def start(rows, cols, mines, agent):
             clicked = []
             if point == 0:
                 action = randint(0, rows * cols - 1)
-                i = action // len(squares[0])
-                j = action % len(squares[0])
+                i, j = action // cols, action % cols
                 square = squares[i][j]
             else:
                 if HEURISTIC:
@@ -107,8 +106,7 @@ def start(rows, cols, mines, agent):
                     qs[cell] = np.min(qs)
                 if np.max(qs) > np.min(qs):
                     action = np.argmax(qs)
-                    i = action // len(squares[0])
-                    j = action % len(squares[0])
+                    i, j = action // cols, action % cols
                     square = squares[i][j]
                 else:
                     print('no max q, just random')
@@ -180,6 +178,10 @@ def start(rows, cols, mines, agent):
         pygame.display.update()
 
     print('point:', point)
+    show_result(squares, screen, boom_cell, w, h, win)
+    listen_event(rows, cols, mines, agent)
+
+def show_result(squares, screen, boom_cell, w, h, win):
     if win:
         for row in squares:
             for square in row:
@@ -197,25 +199,25 @@ def start(rows, cols, mines, agent):
         screen.blit(SAD, ((w-width)//2, (h-height)//2))
     pygame.display.update()
 
-    run = True
-    while run:
+def listen_event(rows, cols, mines, agent):
+    while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                run = False
                 pygame.quit()
+                return
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_r:
-                    run = False
                     start(rows, cols, mines, agent)
+                    return
                 elif event.key == pygame.K_ESCAPE:
-                    run = False
                     pygame.quit()
+                    return
             elif event.type == pygame.MOUSEBUTTONDOWN:
-                run = False
                 if event.button == 1:   # LEFT CLICK
                     start(rows, cols, mines, agent)
                 else:
                     pygame.quit()
+                return
 
 def heuristic(lst):
     rows, cols = len(lst), len(lst[0])
