@@ -137,6 +137,9 @@ def train(args):
     pts, avg = agent.train(args.episodes, env)
     show_training_summary(args.algo, pts, avg, pts_ran, avg_ran)
 
+def play(args):
+    pass
+
 def parseArgs():
     ''' Reads command line arguments. '''
     parser = argparse.ArgumentParser(description = 'An AI Agent for Minesweeper.', formatter_class = argparse.ArgumentDefaultsHelpFormatter)
@@ -151,11 +154,11 @@ def parseArgs():
     args = parser.parse_known_args()[0]
     return args
 
-def main(args):
+if __name__ == "__main__":
+    args = parseArgs()
     if args.mode == 'train':
         train(args)
-    else:
+    elif args.mode == 'test':
         test(args)
-
-if __name__ == "__main__":
-    main(parseArgs())
+    else:
+        play(args)
