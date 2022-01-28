@@ -166,14 +166,15 @@ def start(rows, cols, mines, agent):
 
         paint(squares, screen)
 
-        cnt = 0
-        for row in squares:
-            for square in row:
-                if square.visible and square.val != MINE:
-                    cnt += 1
-        if cnt == rows * cols - mines:
-            run, win = False, True
-            print('WIN')
+        if run:
+            cnt = 0
+            for row in squares:
+                for square in row:
+                    if square.visible:
+                        cnt += 1
+            if cnt == rows * cols - mines:
+                run, win = False, True
+                print('WIN')
 
     print('point:', point)
     show_result(squares, screen, boom_cell, win)
