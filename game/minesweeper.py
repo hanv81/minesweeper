@@ -106,9 +106,6 @@ class Square:
         self.flag = False
         self.rect = pygame.rect.Rect(self.x, self.y, w, h)
 
-def restart(rows, cols, bombs, agent):
-    start(rows, cols, bombs, agent)
-
 def open_square(lst, square):
     square.visible = True
     i, j = square.i, square.j
@@ -232,7 +229,7 @@ def start(rows, cols, bombs, agent):
                     pygame.quit()
                 elif event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_r:
-                        restart(rows, cols, bombs, agent)
+                        start(rows, cols, bombs, agent)
                     elif event.key == pygame.K_a:
                         auto = True
                     elif event.key == pygame.K_ESCAPE:
@@ -305,14 +302,14 @@ def start(rows, cols, bombs, agent):
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_r:
                     run = False
-                    restart(rows, cols, bombs, agent)
+                    start(rows, cols, bombs, agent)
                 elif event.key == pygame.K_ESCAPE:
                     run = False
                     pygame.quit()
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 run = False
                 if event.button == 1:   # LEFT CLICK
-                    restart(rows, cols, bombs, agent)
+                    start(rows, cols, bombs, agent)
                 else:
                     pygame.quit()
 
