@@ -52,15 +52,15 @@ class Game:
                             table[i][j] += 1
         return table
 
-    def open_square(self, lst, square):
+    def open_square(self, squares, square):
         square.visible = True
         i, j = square.i, square.j
         if square.val == 0:
             ij = [(i, j+1), (i, j-1), (i+1, j), (i+1, j+1), (i+1, j-1), (i-1, j), (i-1, j+1), (i-1, j-1)]
             for (i,j) in ij:
-                if 0 <= i < len(lst) and 0 <= j < len(lst[0]):
-                    if not lst[i][j].visible and not lst[i][j].flag:
-                        self.open_square(lst, lst[i][j])
+                if 0 <= i < len(squares) and 0 <= j < len(squares[0]):
+                    if not squares[i][j].visible and not squares[i][j].flag:
+                        self.open_square(squares, squares[i][j])
 
     def init_squares(self, rows, cols, mines):
         table = self.create_table(rows, cols, mines)
@@ -178,30 +178,30 @@ class Game:
 
         pygame.display.update()
 
-    def heuristic(self, lst):
-        rows, cols = len(lst), len(lst[0])
+    def heuristic(self, squares):
+        rows, cols = len(squares), len(squares[0])
         for i in range(rows):
             for j in range(cols):
-                if not lst[i][j].visible:
-                    lst[i][j].flag = False
+                if not squares[i][j].visible:
+                    squares[i][j].flag = False
         for i in range(rows):
             for j in range(cols):
-                square = lst[i][j]
+                square = squares[i][j]
                 if square.visible and square.val > 0:  # square is open
                     neibors, neibors_flag = [], []
                     for r in range(i-1, i+2):
                         for c in range(j-1, j+2):
                             if 0<=r<rows and 0<=c<cols:
-                                if not lst[r][c].visible:
-                                    if lst[r][c].flag:
-                                        neibors_flag.append(lst[r][c])
+                                if not squares[r][c].visible:
+                                    if squares[r][c].flag:
+                                        neibors_flag.append(squares[r][c])
                                     else:
-                                        neibors.append(lst[r][c])
+                                        neibors.append(squares[r][c])
                     if len(neibors) == square.val - len(neibors_flag):
                         for n in neibors:
                             n.flag = True
         time.sleep(0.5)
-        return lst
+        return squares
 
     def agent_action(self, agent, squares, rows, cols):
         action = 0
