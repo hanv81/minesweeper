@@ -61,7 +61,7 @@ def open_square(lst, square):
                 if not lst[i][j].visible and not lst[i][j].flag:
                     open_square(lst, lst[i][j])
 
-def create_squares_n_screen(rows, cols, mines):
+def init_game(rows, cols, mines):
     table = create_table(rows, cols, mines)
 
     w = cols * SIZE
@@ -78,7 +78,7 @@ def create_squares_n_screen(rows, cols, mines):
     return squares, screen
 
 def start(rows, cols, mines, agent):
-    squares, screen = create_squares_n_screen(rows, cols, mines)
+    squares, screen = init_game(rows, cols, mines)
 
     run, win, auto = True, False, False
     boom_cell = None
