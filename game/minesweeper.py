@@ -164,9 +164,7 @@ def start(rows, cols, mines, agent):
                                     if not square.visible:
                                         square.flag = not square.flag
 
-        paint(squares, screen)
-
-        if run:
+        if run: # check if win
             cnt = 0
             for row in squares:
                 for square in row:
@@ -176,37 +174,37 @@ def start(rows, cols, mines, agent):
                 run, win = False, True
                 print('WIN')
 
+        paint(squares, screen, boom_cell, run, win)
+
     print('point:', point)
-    show_result(squares, screen, boom_cell, win)
     listen_event(rows, cols, mines, agent)
 
-def paint(squares, screen):
+def paint(squares, screen, boom_cell, run, win):
     for row in squares:
         for square in row:
             if square.visible:
                 screen.blit(NUMBERS[square.val], (square.x, square.y))
-            if square.flag:
+            elif square.flag:
                 screen.blit(FLAG, (square.x, square.y))
-            if not square.flag and not square.visible:
+            else:
                 screen.blit(GREY, (square.x, square.y))
-    pygame.display.update()
 
-def show_result(squares, screen, boom_cell, win):
-    if win:
-        for row in squares:
-            for square in row:
-                if not square.visible:
-                    screen.blit(FLAG, (square.x, square.y))
-        width, height = GLASSES.get_rect().size
-        screen.blit(GLASSES, ((screen.get_width()-width)//2, (screen.get_height()-height)//2))
-    else:
-        for row in squares:
-            for square in row:
-                if square.val == MINE:
-                    screen.blit(BOMB, (square.x, square.y))
-        width, height = SAD.get_rect().size
-        screen.blit(BOOM, (boom_cell.x, boom_cell.y))
-        screen.blit(SAD, ((screen.get_width()-width)//2, (screen.get_height()-height)//2))
+    if not run:
+        if win:
+            for row in squares:
+                for square in row:
+                    if not square.visible:
+                        screen.blit(FLAG, (square.x, square.y))
+            width, height = GLASSES.get_rect().size
+            screen.blit(GLASSES, ((screen.get_width()-width)//2, (screen.get_height()-height)//2))
+        else:
+            for row in squares:
+                for square in row:
+                    if square.val == MINE:
+                        screen.blit(BOMB, (square.x, square.y))
+            width, height = SAD.get_rect().size
+            screen.blit(BOOM, (boom_cell.x, boom_cell.y))
+            screen.blit(SAD, ((screen.get_width()-width)//2, (screen.get_height()-height)//2))
     pygame.display.update()
 
 def listen_event(rows, cols, mines, agent):
@@ -257,3 +255,6 @@ def heuristic(lst):
 def play_game(agent, rows, cols, mines):
     pygame.init()
     start(rows, cols, mines, agent)
+
+if __name__ == "__main__":
+    play_game(None, 10, 10, 10)
