@@ -62,7 +62,7 @@ class Game:
 
     def init_game(self):
         self.run, self.win, self.auto = True, False, False
-        self.point = 0
+        self.point, self.open = 0, 0
         self.boom_cell = None
         table = self.create_table(self.rows, self.cols, self.mines)
         self.squares = [[] for _ in range(self.rows)]
@@ -78,17 +78,6 @@ class Game:
                     self.agent_play()
             else:   # user play
                 self.user_play()
-
-            if self.run: # check if win
-                cnt = 0
-                for row in self.squares:
-                    for square in row:
-                        if square.visible:
-                            cnt += 1
-                if cnt == self.rows * self.cols - self.mines:
-                    self.run, self.win, self.auto = False, True, False
-                    print('WIN')
-
             self.paint()
 
     def paint(self):
@@ -115,7 +104,8 @@ class Game:
 
         pygame.display.update()
 
-    def open_square(self, square):
+    def open_square_recursive(self, square):
+        self.open += 1
         square.visible = True
         i, j = square.i, square.j
         if square.val == 0:
@@ -123,7 +113,19 @@ class Game:
             for (i,j) in ij:
                 if i in range(self.rows) and j in range(self.cols):
                     if not self.squares[i][j].visible and not self.squares[i][j].flag:
-                        self.open_square(self.squares[i][j])
+                        self.open_square_recursive(self.squares[i][j])
+
+    def open_square(self, square):
+        if square.val == MINE:
+            print('BOMBS')
+            self.boom_cell = square
+            self.run, self.auto = False, False
+        else:
+            self.point += 1
+            self.open_square_recursive(square)
+            if self.open == self.rows * self.cols - self.mines:
+                self.run, self.win, self.auto = False, True, False
+                print('WIN')
 
     def user_play(self):
         for event in pygame.event.get():
@@ -147,14 +149,7 @@ class Game:
                             if square.rect.colliderect(r):
                                 if event.button == 1:   # LEFT CLICK
                                     if not square.flag:
-                                        if square.val == MINE:
-                                            print('BOMBS')
-                                            self.boom_cell = square
-                                            self.run = False
-                                        else:
-                                            self.point += 1
-                                            self.open_square(square)
-
+                                        self.open_square(square)
                                 elif event.button == 3: # RIGHT CLICK
                                     if not square.visible:
                                         square.flag = not square.flag
@@ -226,14 +221,7 @@ class Game:
             square = self.agent_action()
 
         if not square.flag:
-            if square.val == MINE:
-                print('BOMBS')
-                self.boom_cell = square
-                self.run = False
-                self.auto = False
-            else:
-                self.point += 1
-                self.open_square(square)
+            self.open_square(square)
         time.sleep(1)
 
     def play_game(self):
