@@ -45,8 +45,8 @@ class Game:
     def create_table(self, rows, cols, mines):
         table = [[0] * cols for _ in range(rows)]
         while mines > 0:
-            x = randint(0, len(table)-1)
-            y = randint(0, len(table[0])-1)
+            x = randint(0, rows-1)
+            y = randint(0, cols-1)
             if table[x][y] != MINE:
                 table[x][y] = MINE
                 mines -= 1
@@ -56,7 +56,7 @@ class Game:
                 if table[i][j] != MINE:
                     ij = [(i, j+1), (i, j-1), (i+1, j), (i+1, j+1), (i+1, j-1), (i-1, j), (i-1, j+1), (i-1, j-1)]
                     for (ii, jj) in ij:
-                        if 0 <= ii < len(table) and 0 <= jj < len(table[0]) and table[ii][jj] == MINE:
+                        if 0 <= ii < rows and 0 <= jj < cols and table[ii][jj] == MINE:
                             table[i][j] += 1
         return table
 
@@ -66,7 +66,7 @@ class Game:
         if square.val == 0:
             ij = [(i, j+1), (i, j-1), (i+1, j), (i+1, j+1), (i+1, j-1), (i-1, j), (i-1, j+1), (i-1, j-1)]
             for (i,j) in ij:
-                if 0 <= i < len(self.squares) and 0 <= j < len(self.squares[0]):
+                if i in range(self.rows) and j in range(self.cols):
                     if not self.squares[i][j].visible and not self.squares[i][j].flag:
                         self.open_square(self.squares[i][j])
 
