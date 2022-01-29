@@ -111,7 +111,9 @@ def start(rows, cols, mines, agent):
                     pygame.quit()
                 elif event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_r:
-                        start(rows, cols, mines, agent)
+                        if point != 0:
+                            squares = init_squares(rows, cols, mines)
+                            point = 0
                     elif event.key == pygame.K_a:
                         auto = True
                     elif event.key == pygame.K_ESCAPE:
