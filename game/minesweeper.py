@@ -39,6 +39,8 @@ class Game:
         self.cols = cols
         self.mines = mines
         self.agent = agent
+        self.run, self.win, self.auto = True, False, False
+        self.squares, self.screen = self.init_game()
 
     def create_table(self, rows, cols, mines):
         table = [[0] * cols for _ in range(rows)]
@@ -58,15 +60,15 @@ class Game:
                             table[i][j] += 1
         return table
 
-    def open_square(self, squares, square):
+    def open_square(self, square):
         square.visible = True
         i, j = square.i, square.j
         if square.val == 0:
             ij = [(i, j+1), (i, j-1), (i+1, j), (i+1, j+1), (i+1, j-1), (i-1, j), (i-1, j+1), (i-1, j-1)]
             for (i,j) in ij:
-                if 0 <= i < len(squares) and 0 <= j < len(squares[0]):
-                    if not squares[i][j].visible and not squares[i][j].flag:
-                        self.open_square(squares, squares[i][j])
+                if 0 <= i < len(self.squares) and 0 <= j < len(self.squares[0]):
+                    if not self.squares[i][j].visible and not self.squares[i][j].flag:
+                        self.open_square(self.squares[i][j])
 
     def init_squares(self):
         table = self.create_table(self.rows, self.cols, self.mines)
@@ -85,50 +87,48 @@ class Game:
         return squares, screen
 
     def start(self):
-        squares, screen = self.init_game()
-        run, win, auto = True, False, False
         boom_cell = None
         point = 0
         while True:
-            if auto:    # agent play
+            if self.auto:    # agent play
                 if point == 0:
                     action = randint(0, self.rows * self.cols - 1)
                     i, j = action // self.cols, action % self.cols
-                    square = squares[i][j]
+                    square = self.squares[i][j]
                 else:
                     if HEURISTIC:
-                        squares = self.heuristic(squares)
-                    square = self.agent_action(squares)
+                        self.heuristic()
+                    square = self.agent_action()
 
                 if not square.flag:
                     if square.val == MINE:
                         print('BOMBS')
                         boom_cell = square
-                        run = False
+                        self.run = False
                     else:
                         point += 1
-                        self.open_square(squares, square)
+                        self.open_square(square)
                 time.sleep(1)
 
             else:   # user play
                 for event in pygame.event.get():
                     if event.type == pygame.QUIT:
-                        run = False
+                        self.run = False
                         pygame.quit()
                     elif event.type == pygame.KEYDOWN:
                         if event.key == pygame.K_r:
-                            if not run:
-                                squares = self.init_squares()
-                                point, run, win = 0, True, False
+                            if not self.run:
+                                self.squares = self.init_squares()
+                                self.point, self.run, self.win = 0, True, False
                         elif event.key == pygame.K_a:
-                            auto = True
+                            self.auto = True
                         elif event.key == pygame.K_ESCAPE:
-                            run = False
+                            self.run = False
                             pygame.quit()
                     elif event.type == pygame.MOUSEBUTTONDOWN:
-                        if run:
+                        if self.run:
                             r = pygame.rect.Rect(pygame.mouse.get_pos(), (1,1))
-                            for row in squares:
+                            for row in self.squares:
                                 for square in row:
                                     if square.rect.colliderect(r):
                                         if event.button == 1:   # LEFT CLICK
@@ -136,84 +136,82 @@ class Game:
                                                 if square.val == MINE:
                                                     print('BOMBS')
                                                     boom_cell = square
-                                                    run = False
+                                                    self.run = False
                                                 else:
                                                     point += 1
-                                                    self.open_square(squares, square)
+                                                    self.open_square(square)
 
                                         elif event.button == 3: # RIGHT CLICK
                                             if not square.visible:
                                                 square.flag = not square.flag
                         else:
-                            squares = self.init_squares()
-                            point, run, win = 0, True, False
+                            self.squares = self.init_squares()
+                            self.point, self.run, self.win = 0, True, False
 
-            if run: # check if win
+            if self.run: # check if win
                 cnt = 0
-                for row in squares:
+                for row in self.squares:
                     for square in row:
                         if square.visible:
                             cnt += 1
                 if cnt == self.rows * self.cols - self.mines:
-                    run, win = False, True
+                    self.run, self.win = False, True
                     print('WIN')
 
-            self.paint(squares, screen, boom_cell, run, win)
+            self.paint(boom_cell)
 
-    def paint(self, squares, screen, boom_cell, run, win):
-        for row in squares:
+    def paint(self, boom_cell):
+        for row in self.squares:
             for square in row:
                 if square.visible:
-                    screen.blit(NUMBERS[square.val], (square.x, square.y))
+                    self.screen.blit(NUMBERS[square.val], (square.x, square.y))
                 else:
-                    if square.flag or win:
-                        screen.blit(FLAG, (square.x, square.y))
-                    elif run or square.val != MINE:
-                        screen.blit(GREY, (square.x, square.y))
+                    if square.flag or self.win:
+                        self.screen.blit(FLAG, (square.x, square.y))
+                    elif self.run or square.val != MINE:
+                        self.screen.blit(GREY, (square.x, square.y))
                     else:
-                        screen.blit(BOMB, (square.x, square.y))
+                        self.screen.blit(BOMB, (square.x, square.y))
 
-        if not run:
-            if win:
+        if not self.run:
+            if self.win:
                 width, height = GLASSES.get_rect().size
-                screen.blit(GLASSES, ((screen.get_width()-width)//2, (screen.get_height()-height)//2))
+                self.screen.blit(GLASSES, ((self.screen.get_width()-width)//2, (self.screen.get_height()-height)//2))
             else:
                 width, height = SAD.get_rect().size
-                screen.blit(BOOM, (boom_cell.x, boom_cell.y))
-                screen.blit(SAD, ((screen.get_width()-width)//2, (screen.get_height()-height)//2))
+                self.screen.blit(BOOM, (boom_cell.x, boom_cell.y))
+                self.screen.blit(SAD, ((self.screen.get_width()-width)//2, (self.screen.get_height()-height)//2))
 
         pygame.display.update()
 
-    def heuristic(self, squares):
-        rows, cols = len(squares), len(squares[0])
-        for i in range(rows):
-            for j in range(cols):
-                if not squares[i][j].visible:
-                    squares[i][j].flag = False
-        for i in range(rows):
-            for j in range(cols):
-                square = squares[i][j]
+    def heuristic(self):
+        for i in range(self.rows):
+            for j in range(self.cols):
+                if not self.squares[i][j].visible:
+                    self.squares[i][j].flag = False
+        for i in range(self.rows):
+            for j in range(self.cols):
+                square = self.squares[i][j]
                 if square.visible and square.val > 0:  # square is open
                     neibors, neibors_flag = [], []
                     for r in range(i-1, i+2):
                         for c in range(j-1, j+2):
-                            if 0<=r<rows and 0<=c<cols:
-                                if not squares[r][c].visible:
-                                    if squares[r][c].flag:
-                                        neibors_flag.append(squares[r][c])
+                            if 0<=r<self.rows and 0<=c<self.cols:
+                                if not self.squares[r][c].visible:
+                                    if self.squares[r][c].flag:
+                                        neibors_flag.append(self.squares[r][c])
                                     else:
-                                        neibors.append(squares[r][c])
+                                        neibors.append(self.squares[r][c])
                     if len(neibors) == square.val - len(neibors_flag):
                         for n in neibors:
                             n.flag = True
         time.sleep(0.5)
-        return squares
 
-    def agent_action(self, squares):
+    def agent_action(self):
         action = 0
         state = []
         clicked = []
-        for row in squares:
+        for row in self.squares:
             r = []
             for square in row:
                 if square.visible or square.flag:
@@ -229,14 +227,14 @@ class Game:
         if np.max(qs) > np.min(qs):
             action = np.argmax(qs)
             i, j = action // self.cols, action % self.cols
-            square = squares[i][j]
+            square = self.squares[i][j]
         else:
             print('no max q, just random')
             cells_to_click = []
             for i in range(self.rows):
                 for j in range(self.cols):
-                    if not squares[j][j].visible and not squares[i][j].flag:
-                        cells_to_click.append(squares[i][j])
+                    if not self.squares[j][j].visible and not self.squares[i][j].flag:
+                        cells_to_click.append(self.squares[i][j])
             square = random.sample(cells_to_click, 1)[0]
         return square
 
