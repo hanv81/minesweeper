@@ -39,8 +39,8 @@ class Game:
         self.cols = cols
         self.mines = mines
         self.agent = agent
-        self.run, self.win, self.auto = True, False, False
-        self.squares, self.screen = self.init_game()
+        self.screen = pygame.display.set_mode((self.cols * SIZE, self.rows * SIZE))
+        self.init_game()
 
     def create_table(self, rows, cols, mines):
         table = [[0] * cols for _ in range(rows)]
@@ -70,21 +70,14 @@ class Game:
                     if not self.squares[i][j].visible and not self.squares[i][j].flag:
                         self.open_square(self.squares[i][j])
 
-    def init_squares(self):
+    def init_game(self):
+        self.run, self.win, self.auto = True, False, False
         table = self.create_table(self.rows, self.cols, self.mines)
-        squares = [[] for _ in range(self.rows)]
+        self.squares = [[] for _ in range(self.rows)]
         for i in range(self.rows):
             for j in range(self.cols):
                 square = Square(i, j, SIZE, SIZE, table[i][j])
-                squares[i] += [square]
-        return squares
-
-    def init_game(self):
-        w = self.cols * SIZE
-        h = self.rows * SIZE
-        screen = pygame.display.set_mode((w,h))
-        squares = self.init_squares()
-        return squares, screen
+                self.squares[i] += [square]
 
     def start(self):
         boom_cell = None
@@ -118,8 +111,7 @@ class Game:
                     elif event.type == pygame.KEYDOWN:
                         if event.key == pygame.K_r:
                             if not self.run:
-                                self.squares = self.init_squares()
-                                self.point, self.run, self.win = 0, True, False
+                                self.init_game()
                         elif event.key == pygame.K_a:
                             self.auto = True
                         elif event.key == pygame.K_ESCAPE:
@@ -145,8 +137,7 @@ class Game:
                                             if not square.visible:
                                                 square.flag = not square.flag
                         else:
-                            self.squares = self.init_squares()
-                            self.point, self.run, self.win = 0, True, False
+                            self.init_game()
 
             if self.run: # check if win
                 cnt = 0
