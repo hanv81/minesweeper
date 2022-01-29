@@ -34,6 +34,12 @@ class Square:
         self.rect = pygame.rect.Rect(self.x, self.y, w, h)
 
 class Game:
+    def __init__(self, rows, cols, mines, agent):
+        self.rows = rows
+        self.cols = cols
+        self.mines = mines
+        self.agent = agent
+
     def create_table(self, rows, cols, mines):
         table = [[0] * cols for _ in range(rows)]
         while mines > 0:
@@ -62,37 +68,37 @@ class Game:
                     if not squares[i][j].visible and not squares[i][j].flag:
                         self.open_square(squares, squares[i][j])
 
-    def init_squares(self, rows, cols, mines):
-        table = self.create_table(rows, cols, mines)
-        squares = [[] for _ in range(rows)]
-        for i in range(rows):
-            for j in range(cols):
+    def init_squares(self):
+        table = self.create_table(self.rows, self.cols, self.mines)
+        squares = [[] for _ in range(self.rows)]
+        for i in range(self.rows):
+            for j in range(self.cols):
                 square = Square(i, j, SIZE, SIZE, table[i][j])
                 squares[i] += [square]
         return squares
 
-    def init_game(self, rows, cols, mines):
-        w = cols * SIZE
-        h = rows * SIZE
+    def init_game(self):
+        w = self.cols * SIZE
+        h = self.rows * SIZE
         screen = pygame.display.set_mode((w,h))
-        squares = self.init_squares(rows, cols, mines)
+        squares = self.init_squares()
         return squares, screen
 
-    def start(self, rows, cols, mines, agent):
-        squares, screen = self.init_game(rows, cols, mines)
+    def start(self):
+        squares, screen = self.init_game()
         run, win, auto = True, False, False
         boom_cell = None
         point = 0
         while True:
             if auto:    # agent play
                 if point == 0:
-                    action = randint(0, rows * cols - 1)
-                    i, j = action // cols, action % cols
+                    action = randint(0, self.rows * self.cols - 1)
+                    i, j = action // self.cols, action % self.cols
                     square = squares[i][j]
                 else:
                     if HEURISTIC:
                         squares = self.heuristic(squares)
-                    square = self.agent_action(agent, squares, rows, cols)
+                    square = self.agent_action(squares)
 
                 if not square.flag:
                     if square.val == MINE:
@@ -112,7 +118,7 @@ class Game:
                     elif event.type == pygame.KEYDOWN:
                         if event.key == pygame.K_r:
                             if not run:
-                                squares = self.init_squares(rows, cols, mines)
+                                squares = self.init_squares()
                                 point, run, win = 0, True, False
                         elif event.key == pygame.K_a:
                             auto = True
@@ -139,7 +145,7 @@ class Game:
                                             if not square.visible:
                                                 square.flag = not square.flag
                         else:
-                            squares = self.init_squares(rows, cols, mines)
+                            squares = self.init_squares()
                             point, run, win = 0, True, False
 
             if run: # check if win
@@ -148,7 +154,7 @@ class Game:
                     for square in row:
                         if square.visible:
                             cnt += 1
-                if cnt == rows * cols - mines:
+                if cnt == self.rows * self.cols - self.mines:
                     run, win = False, True
                     print('WIN')
 
@@ -203,7 +209,7 @@ class Game:
         time.sleep(0.5)
         return squares
 
-    def agent_action(self, agent, squares, rows, cols):
+    def agent_action(self, squares):
         action = 0
         state = []
         clicked = []
@@ -217,27 +223,27 @@ class Game:
                     r.append(-1)    # UNKNOWN
                 action += 1
             state.append(r)
-        qs = agent.predict(np.array(state))[0]
+        qs = self.agent.predict(np.array(state))[0]
         for cell in clicked:
             qs[cell] = np.min(qs)
         if np.max(qs) > np.min(qs):
             action = np.argmax(qs)
-            i, j = action // cols, action % cols
+            i, j = action // self.cols, action % self.cols
             square = squares[i][j]
         else:
             print('no max q, just random')
             cells_to_click = []
-            for i in range(rows):
-                for j in range(cols):
+            for i in range(self.rows):
+                for j in range(self.cols):
                     if not squares[j][j].visible and not squares[i][j].flag:
                         cells_to_click.append(squares[i][j])
             square = random.sample(cells_to_click, 1)[0]
         return square
 
-    def play_game(self, rows, cols, mines, agent):
+    def play_game(self):
         pygame.init()
-        self.start(rows, cols, mines, agent)
+        self.start()
 
 if __name__ == "__main__":
-    game = Game()
-    game.play_game(10, 10, 10, None)
+    game = Game(5, 5, 3, None)
+    game.play_game()
