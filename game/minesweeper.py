@@ -84,25 +84,7 @@ class Game:
     def start(self):
         while True:
             if self.auto:    # agent play
-                if self.point == 0:
-                    action = randint(0, self.rows * self.cols - 1)
-                    i, j = action // self.cols, action % self.cols
-                    square = self.squares[i][j]
-                else:
-                    if HEURISTIC:
-                        self.heuristic()
-                    square = self.agent_action()
-
-                if not square.flag:
-                    if square.val == MINE:
-                        print('BOMBS')
-                        self.boom_cell = square
-                        self.run = False
-                    else:
-                        self.point += 1
-                        self.open_square(square)
-                time.sleep(1)
-
+                self.agent_play()
             else:   # user play
                 for event in pygame.event.get():
                     if event.type == pygame.QUIT:
@@ -228,6 +210,26 @@ class Game:
                         cells_to_click.append(self.squares[i][j])
             square = random.sample(cells_to_click, 1)[0]
         return square
+
+    def agent_play(self):
+        if self.point == 0:
+            action = randint(0, self.rows * self.cols - 1)
+            i, j = action // self.cols, action % self.cols
+            square = self.squares[i][j]
+        else:
+            if HEURISTIC:
+                self.heuristic()
+            square = self.agent_action()
+
+        if not square.flag:
+            if square.val == MINE:
+                print('BOMBS')
+                self.boom_cell = square
+                self.run = False
+            else:
+                self.point += 1
+                self.open_square(square)
+        time.sleep(1)
 
     def play_game(self):
         pygame.init()
