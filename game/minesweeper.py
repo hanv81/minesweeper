@@ -72,6 +72,8 @@ class Game:
 
     def init_game(self):
         self.run, self.win, self.auto = True, False, False
+        self.point = 0
+        self.boom_cell = None
         table = self.create_table(self.rows, self.cols, self.mines)
         self.squares = [[] for _ in range(self.rows)]
         for i in range(self.rows):
@@ -80,11 +82,9 @@ class Game:
                 self.squares[i] += [square]
 
     def start(self):
-        boom_cell = None
-        point = 0
         while True:
             if self.auto:    # agent play
-                if point == 0:
+                if self.point == 0:
                     action = randint(0, self.rows * self.cols - 1)
                     i, j = action // self.cols, action % self.cols
                     square = self.squares[i][j]
@@ -96,10 +96,10 @@ class Game:
                 if not square.flag:
                     if square.val == MINE:
                         print('BOMBS')
-                        boom_cell = square
+                        self.boom_cell = square
                         self.run = False
                     else:
-                        point += 1
+                        self.point += 1
                         self.open_square(square)
                 time.sleep(1)
 
@@ -127,10 +127,10 @@ class Game:
                                             if not square.flag:
                                                 if square.val == MINE:
                                                     print('BOMBS')
-                                                    boom_cell = square
+                                                    self.boom_cell = square
                                                     self.run = False
                                                 else:
-                                                    point += 1
+                                                    self.point += 1
                                                     self.open_square(square)
 
                                         elif event.button == 3: # RIGHT CLICK
@@ -149,9 +149,9 @@ class Game:
                     self.run, self.win = False, True
                     print('WIN')
 
-            self.paint(boom_cell)
+            self.paint()
 
-    def paint(self, boom_cell):
+    def paint(self):
         for row in self.squares:
             for square in row:
                 if square.visible:
@@ -170,7 +170,7 @@ class Game:
                 self.screen.blit(GLASSES, ((self.screen.get_width()-width)//2, (self.screen.get_height()-height)//2))
             else:
                 width, height = SAD.get_rect().size
-                self.screen.blit(BOOM, (boom_cell.x, boom_cell.y))
+                self.screen.blit(BOOM, (self.boom_cell.x, self.boom_cell.y))
                 self.screen.blit(SAD, ((self.screen.get_width()-width)//2, (self.screen.get_height()-height)//2))
 
         pygame.display.update()
