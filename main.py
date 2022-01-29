@@ -6,7 +6,7 @@ from agent.DoubleDQN import DoubleDQN
 from agent.PG import PG
 from agent.A2C import A2C
 from agent.DQN_Torch import DQNTorch
-from game.minesweeper import play_game
+from game.minesweeper import Game
 from tqdm import tqdm
 import numpy as np
 import random
@@ -157,7 +157,8 @@ def play(args):
     else:
         agent = PG()
         agent.load_model('./model/pg.h5')
-    play_game(agent, args.rows, args.cols, args.mines)
+    game = Game(args.rows, args.cols, args.mines, agent)
+    game.play_game()
 
 def parseArgs():
     ''' Reads command line arguments. '''
