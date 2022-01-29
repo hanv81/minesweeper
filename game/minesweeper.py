@@ -83,7 +83,7 @@ def start(rows, cols, mines, agent):
     run, win, auto = True, False, False
     boom_cell = None
     point = 0
-    while run:
+    while True:
         if auto:    # agent play
             if point == 0:
                 action = randint(0, rows * cols - 1)
@@ -111,32 +111,36 @@ def start(rows, cols, mines, agent):
                     pygame.quit()
                 elif event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_r:
-                        if point != 0:
+                        if not run:
                             squares = init_squares(rows, cols, mines)
-                            point = 0
+                            point, run, win = 0, True, False
                     elif event.key == pygame.K_a:
                         auto = True
                     elif event.key == pygame.K_ESCAPE:
                         run = False
                         pygame.quit()
                 elif event.type == pygame.MOUSEBUTTONDOWN:
-                    r = pygame.rect.Rect(pygame.mouse.get_pos(), (1,1))
-                    for row in squares:
-                        for square in row:
-                            if square.rect.colliderect(r):
-                                if event.button == 1:   # LEFT CLICK
-                                    if not square.flag:
-                                        if square.val == MINE:
-                                            print('BOMBS')
-                                            boom_cell = square
-                                            run = False
-                                        else:
-                                            point += 1
-                                            open_square(squares, square)
+                    if run:
+                        r = pygame.rect.Rect(pygame.mouse.get_pos(), (1,1))
+                        for row in squares:
+                            for square in row:
+                                if square.rect.colliderect(r):
+                                    if event.button == 1:   # LEFT CLICK
+                                        if not square.flag:
+                                            if square.val == MINE:
+                                                print('BOMBS')
+                                                boom_cell = square
+                                                run = False
+                                            else:
+                                                point += 1
+                                                open_square(squares, square)
 
-                                elif event.button == 3: # RIGHT CLICK
-                                    if not square.visible:
-                                        square.flag = not square.flag
+                                    elif event.button == 3: # RIGHT CLICK
+                                        if not square.visible:
+                                            square.flag = not square.flag
+                    else:
+                        squares = init_squares(rows, cols, mines)
+                        point, run, win = 0, True, False
 
         if run: # check if win
             cnt = 0
@@ -149,9 +153,6 @@ def start(rows, cols, mines, agent):
                 print('WIN')
 
         paint(squares, screen, boom_cell, run, win)
-
-    print('point:', point)
-    listen_event(rows, cols, mines, agent)
 
 def paint(squares, screen, boom_cell, run, win):
     for row in squares:
