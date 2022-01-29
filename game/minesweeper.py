@@ -85,8 +85,6 @@ def start(rows, cols, mines, agent):
     point = 0
     while run:
         if auto:    # agent play
-            state = []
-            clicked = []
             if point == 0:
                 action = randint(0, rows * cols - 1)
                 i, j = action // cols, action % cols
@@ -94,33 +92,7 @@ def start(rows, cols, mines, agent):
             else:
                 if HEURISTIC:
                     squares = heuristic(squares)
-
-                action = 0
-                for row in squares:
-                    r = []
-                    for square in row:
-                        if square.visible or square.flag:
-                            r.append(square.val)
-                            clicked.append(action)
-                        else:
-                            r.append(-1)
-                        action += 1
-                    state.append(r)
-                qs = agent.predict(np.array(state))[0]
-                for cell in clicked:
-                    qs[cell] = np.min(qs)
-                if np.max(qs) > np.min(qs):
-                    action = np.argmax(qs)
-                    i, j = action // cols, action % cols
-                    square = squares[i][j]
-                else:
-                    print('no max q, just random')
-                    cells_to_click = []
-                    for i in range(rows):
-                        for j in range(cols):
-                            if not squares[j][j].visible and not squares[i][j].flag:
-                                cells_to_click.append(squares[i][j])
-                    square = random.sample(cells_to_click, 1)[0]
+                square = agent_action(agent, squares, rows, cols)
 
             if not square.flag:
                 if square.val == MINE:
@@ -247,6 +219,37 @@ def heuristic(lst):
                         n.flag = True
     time.sleep(0.5)
     return lst
+
+def agent_action(agent, squares, rows, cols):
+    action = 0
+    state = []
+    clicked = []
+    for row in squares:
+        r = []
+        for square in row:
+            if square.visible or square.flag:
+                r.append(square.val)
+                clicked.append(action)
+            else:
+                r.append(-1)    # UNKNOWN
+            action += 1
+        state.append(r)
+    qs = agent.predict(np.array(state))[0]
+    for cell in clicked:
+        qs[cell] = np.min(qs)
+    if np.max(qs) > np.min(qs):
+        action = np.argmax(qs)
+        i, j = action // cols, action % cols
+        square = squares[i][j]
+    else:
+        print('no max q, just random')
+        cells_to_click = []
+        for i in range(rows):
+            for j in range(cols):
+                if not squares[j][j].visible and not squares[i][j].flag:
+                    cells_to_click.append(squares[i][j])
+        square = random.sample(cells_to_click, 1)[0]
+    return square
 
 def play_game(agent, rows, cols, mines):
     pygame.init()
