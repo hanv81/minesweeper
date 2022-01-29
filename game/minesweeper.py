@@ -60,16 +60,6 @@ class Game:
                             table[i][j] += 1
         return table
 
-    def open_square(self, square):
-        square.visible = True
-        i, j = square.i, square.j
-        if square.val == 0:
-            ij = [(i, j+1), (i, j-1), (i+1, j), (i+1, j+1), (i+1, j-1), (i-1, j), (i-1, j+1), (i-1, j-1)]
-            for (i,j) in ij:
-                if i in range(self.rows) and j in range(self.cols):
-                    if not self.squares[i][j].visible and not self.squares[i][j].flag:
-                        self.open_square(self.squares[i][j])
-
     def init_game(self):
         self.run, self.win, self.auto = True, False, False
         self.point = 0
@@ -84,42 +74,10 @@ class Game:
     def start(self):
         while True:
             if self.auto:    # agent play
-                self.agent_play()
+                if self.run:
+                    self.agent_play()
             else:   # user play
-                for event in pygame.event.get():
-                    if event.type == pygame.QUIT:
-                        self.run = False
-                        pygame.quit()
-                    elif event.type == pygame.KEYDOWN:
-                        if event.key == pygame.K_r:
-                            if not self.run:
-                                self.init_game()
-                        elif event.key == pygame.K_a:
-                            self.auto = True
-                        elif event.key == pygame.K_ESCAPE:
-                            self.run = False
-                            pygame.quit()
-                    elif event.type == pygame.MOUSEBUTTONDOWN:
-                        if self.run:
-                            r = pygame.rect.Rect(pygame.mouse.get_pos(), (1,1))
-                            for row in self.squares:
-                                for square in row:
-                                    if square.rect.colliderect(r):
-                                        if event.button == 1:   # LEFT CLICK
-                                            if not square.flag:
-                                                if square.val == MINE:
-                                                    print('BOMBS')
-                                                    self.boom_cell = square
-                                                    self.run = False
-                                                else:
-                                                    self.point += 1
-                                                    self.open_square(square)
-
-                                        elif event.button == 3: # RIGHT CLICK
-                                            if not square.visible:
-                                                square.flag = not square.flag
-                        else:
-                            self.init_game()
+                self.user_play()
 
             if self.run: # check if win
                 cnt = 0
@@ -128,7 +86,7 @@ class Game:
                         if square.visible:
                             cnt += 1
                 if cnt == self.rows * self.cols - self.mines:
-                    self.run, self.win = False, True
+                    self.run, self.win, self.auto = False, True, False
                     print('WIN')
 
             self.paint()
@@ -156,6 +114,52 @@ class Game:
                 self.screen.blit(SAD, ((self.screen.get_width()-width)//2, (self.screen.get_height()-height)//2))
 
         pygame.display.update()
+
+    def open_square(self, square):
+        square.visible = True
+        i, j = square.i, square.j
+        if square.val == 0:
+            ij = [(i, j+1), (i, j-1), (i+1, j), (i+1, j+1), (i+1, j-1), (i-1, j), (i-1, j+1), (i-1, j-1)]
+            for (i,j) in ij:
+                if i in range(self.rows) and j in range(self.cols):
+                    if not self.squares[i][j].visible and not self.squares[i][j].flag:
+                        self.open_square(self.squares[i][j])
+
+    def user_play(self):
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                self.run = False
+                pygame.quit()
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_r:
+                    if not self.run:
+                        self.init_game()
+                elif event.key == pygame.K_a:
+                    self.auto = True
+                elif event.key == pygame.K_ESCAPE:
+                    self.run = False
+                    pygame.quit()
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                if self.run:
+                    r = pygame.rect.Rect(pygame.mouse.get_pos(), (1,1))
+                    for row in self.squares:
+                        for square in row:
+                            if square.rect.colliderect(r):
+                                if event.button == 1:   # LEFT CLICK
+                                    if not square.flag:
+                                        if square.val == MINE:
+                                            print('BOMBS')
+                                            self.boom_cell = square
+                                            self.run = False
+                                        else:
+                                            self.point += 1
+                                            self.open_square(square)
+
+                                elif event.button == 3: # RIGHT CLICK
+                                    if not square.visible:
+                                        square.flag = not square.flag
+                else:
+                    self.init_game()
 
     def heuristic(self):
         for i in range(self.rows):
@@ -226,6 +230,7 @@ class Game:
                 print('BOMBS')
                 self.boom_cell = square
                 self.run = False
+                self.auto = False
             else:
                 self.point += 1
                 self.open_square(square)
