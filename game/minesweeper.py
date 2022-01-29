@@ -61,20 +61,20 @@ def open_square(lst, square):
                 if not lst[i][j].visible and not lst[i][j].flag:
                     open_square(lst, lst[i][j])
 
-def init_game(rows, cols, mines):
+def init_squares(rows, cols, mines):
     table = create_table(rows, cols, mines)
-
-    w = cols * SIZE
-    h = rows * SIZE
-    screen = pygame.display.set_mode((w,h))
-
     squares = [[] for _ in range(rows)]
     for i in range(rows):
         for j in range(cols):
             square = Square(i, j, SIZE, SIZE, table[i][j])
             squares[i] += [square]
-            screen.blit(GREY, (square.x, square.y))
+    return squares
 
+def init_game(rows, cols, mines):
+    w = cols * SIZE
+    h = rows * SIZE
+    screen = pygame.display.set_mode((w,h))
+    squares = init_squares(rows, cols, mines)
     return squares, screen
 
 def start(rows, cols, mines, agent):
