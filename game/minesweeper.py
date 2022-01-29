@@ -184,27 +184,23 @@ def paint(squares, screen, boom_cell, run, win):
         for square in row:
             if square.visible:
                 screen.blit(NUMBERS[square.val], (square.x, square.y))
-            elif square.flag:
-                screen.blit(FLAG, (square.x, square.y))
             else:
-                screen.blit(GREY, (square.x, square.y))
+                if square.flag or win:
+                    screen.blit(FLAG, (square.x, square.y))
+                elif run or square.val != MINE:
+                    screen.blit(GREY, (square.x, square.y))
+                else:
+                    screen.blit(BOMB, (square.x, square.y))
 
     if not run:
         if win:
-            for row in squares:
-                for square in row:
-                    if not square.visible:
-                        screen.blit(FLAG, (square.x, square.y))
             width, height = GLASSES.get_rect().size
             screen.blit(GLASSES, ((screen.get_width()-width)//2, (screen.get_height()-height)//2))
         else:
-            for row in squares:
-                for square in row:
-                    if square.val == MINE:
-                        screen.blit(BOMB, (square.x, square.y))
             width, height = SAD.get_rect().size
             screen.blit(BOOM, (boom_cell.x, boom_cell.y))
             screen.blit(SAD, ((screen.get_width()-width)//2, (screen.get_height()-height)//2))
+
     pygame.display.update()
 
 def listen_event(rows, cols, mines, agent):
