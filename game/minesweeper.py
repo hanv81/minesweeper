@@ -55,13 +55,12 @@ class Game:
                 table[i][j] = MINE
                 mines -= 1
 
-        for i in range(self.rows):
-            for j in range(self.cols):
-                if table[i][j] != MINE:
-                    ij = [(i, j+1), (i, j-1), (i+1, j), (i+1, j+1), (i+1, j-1), (i-1, j), (i-1, j+1), (i-1, j-1)]
-                    for (ii, jj) in ij:
-                        if 0 <= ii < self.rows and 0 <= jj < self.cols and table[ii][jj] == MINE:
-                            table[i][j] += 1
+        for i,j in self.ij:
+            if table[i][j] != MINE:
+                ij = [(i, j+1), (i, j-1), (i+1, j), (i+1, j+1), (i+1, j-1), (i-1, j), (i-1, j+1), (i-1, j-1)]
+                for (ii, jj) in ij:
+                    if 0 <= ii < self.rows and 0 <= jj < self.cols and table[ii][jj] == MINE:
+                        table[i][j] += 1
         return table
 
     def init_game(self):
