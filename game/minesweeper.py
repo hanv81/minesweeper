@@ -163,7 +163,7 @@ class Game:
         for i,j in self.ij:
             if not self.squares[i][j].visible:
                 self.squares[i][j].flag = False
-        for i,j in range(self.rows):
+        for i,j in self.ij:
             square = self.squares[i][j]
             if square.visible and square.val > 0:  # square is open
                 neibors, neibors_flag = [], []
