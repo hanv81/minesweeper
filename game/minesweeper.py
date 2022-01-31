@@ -40,6 +40,10 @@ class Game:
         self.mines = mines
         self.agent = agent
         self.screen = pygame.display.set_mode((self.cols * SIZE, self.rows * SIZE))
+        self.ij = []
+        for i in range(rows):
+            for j in range(cols):
+                self.ij += [(i,j)]
         self.init_game()
 
     def create_table(self, mines):
