@@ -45,10 +45,10 @@ class Game:
     def create_table(self, rows, cols, mines):
         table = [[0] * cols for _ in range(rows)]
         while mines > 0:
-            x = randint(0, rows-1)
-            y = randint(0, cols-1)
-            if table[x][y] != MINE:
-                table[x][y] = MINE
+            i = randint(0, rows-1)
+            j = randint(0, cols-1)
+            if table[i][j] != MINE:
+                table[i][j] = MINE
                 mines -= 1
 
         for i in range(rows):
