@@ -147,39 +147,37 @@ class Game:
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 if self.run:
                     r = pygame.rect.Rect(pygame.mouse.get_pos(), (1,1))
-                    for row in self.squares:
-                        for square in row:
-                            if square.rect.colliderect(r):
-                                if event.button == 1:   # LEFT CLICK
-                                    if not square.flag:
-                                        self.open_square(square)
-                                elif event.button == 3: # RIGHT CLICK
-                                    if not square.visible:
-                                        square.flag = not square.flag
+                    for i,j in self.ij:
+                        square = self.squares[i][j]
+                        if square.rect.colliderect(r):
+                            if event.button == 1:   # LEFT CLICK
+                                if not square.flag:
+                                    self.open_square(square)
+                            elif event.button == 3: # RIGHT CLICK
+                                if not square.visible:
+                                    square.flag = not square.flag
                 else:
                     self.init_game()
 
     def heuristic(self):
-        for i in range(self.rows):
-            for j in range(self.cols):
-                if not self.squares[i][j].visible:
-                    self.squares[i][j].flag = False
-        for i in range(self.rows):
-            for j in range(self.cols):
-                square = self.squares[i][j]
-                if square.visible and square.val > 0:  # square is open
-                    neibors, neibors_flag = [], []
-                    for r in range(i-1, i+2):
-                        for c in range(j-1, j+2):
-                            if 0<=r<self.rows and 0<=c<self.cols:
-                                if not self.squares[r][c].visible:
-                                    if self.squares[r][c].flag:
-                                        neibors_flag.append(self.squares[r][c])
-                                    else:
-                                        neibors.append(self.squares[r][c])
-                    if len(neibors) == square.val - len(neibors_flag):
-                        for n in neibors:
-                            n.flag = True
+        for i,j in self.ij:
+            if not self.squares[i][j].visible:
+                self.squares[i][j].flag = False
+        for i,j in range(self.rows):
+            square = self.squares[i][j]
+            if square.visible and square.val > 0:  # square is open
+                neibors, neibors_flag = [], []
+                rc = [(i, j+1), (i, j-1), (i+1, j), (i+1, j+1), (i+1, j-1), (i-1, j), (i-1, j+1), (i-1, j-1)]
+                for r,c in rc:
+                    if 0<=r<self.rows and 0<=c<self.cols:
+                        if not self.squares[r][c].visible:
+                            if self.squares[r][c].flag:
+                                neibors_flag.append(self.squares[r][c])
+                            else:
+                                neibors.append(self.squares[r][c])
+                if len(neibors) == square.val - len(neibors_flag):
+                    for n in neibors:
+                        n.flag = True
         time.sleep(0.5)
 
     def agent_action(self):
@@ -206,10 +204,9 @@ class Game:
         else:
             print('no max q, just random')
             cells_to_click = []
-            for i in range(self.rows):
-                for j in range(self.cols):
-                    if not self.squares[j][j].visible and not self.squares[i][j].flag:
-                        cells_to_click.append(self.squares[i][j])
+            for i,j in self.ij:
+                if not self.squares[j][j].visible and not self.squares[i][j].flag:
+                    cells_to_click.append(self.squares[i][j])
             square = random.sample(cells_to_click, 1)[0]
         return square
 
