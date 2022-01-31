@@ -84,17 +84,17 @@ class Game:
             self.paint()
 
     def paint(self):
-        for row in self.squares:
-            for square in row:
-                if square.visible:
-                    self.screen.blit(NUMBERS[square.val], (square.x, square.y))
+        for i,j in self.ij:
+            square = self.squares[i][j]
+            if square.visible:
+                self.screen.blit(NUMBERS[square.val], (square.x, square.y))
+            else:
+                if square.flag or self.win:
+                    self.screen.blit(FLAG, (square.x, square.y))
+                elif self.run or square.val != MINE:
+                    self.screen.blit(GREY, (square.x, square.y))
                 else:
-                    if square.flag or self.win:
-                        self.screen.blit(FLAG, (square.x, square.y))
-                    elif self.run or square.val != MINE:
-                        self.screen.blit(GREY, (square.x, square.y))
-                    else:
-                        self.screen.blit(BOMB, (square.x, square.y))
+                    self.screen.blit(BOMB, (square.x, square.y))
 
         if not self.run:
             if self.win:
@@ -113,7 +113,7 @@ class Game:
         i, j = square.i, square.j
         if square.val == 0:
             ij = [(i, j+1), (i, j-1), (i+1, j), (i+1, j+1), (i+1, j-1), (i-1, j), (i-1, j+1), (i-1, j-1)]
-            for (i,j) in ij:
+            for i,j in ij:
                 if i in range(self.rows) and j in range(self.cols):
                     if not self.squares[i][j].visible and not self.squares[i][j].flag:
                         self.open_square_recursive(self.squares[i][j])
