@@ -100,11 +100,11 @@ class Game:
     def open_square_recursive(self, square):
         self.open += 1
         square.visible = True
-        i, j = square.i, square.j
         if square.val == 0:
+            i, j = square.i, square.j
             ij = [(i, j+1), (i, j-1), (i+1, j), (i+1, j+1), (i+1, j-1), (i-1, j), (i-1, j+1), (i-1, j-1)]
             for i,j in ij:
-                if i in range(self.rows) and j in range(self.cols):
+                if 0 <= i < self.rows and 0 <= j < self.cols:
                     if not self.squares[i][j].visible and not self.squares[i][j].flag:
                         self.open_square_recursive(self.squares[i][j])
 
