@@ -42,21 +42,21 @@ class Game:
         self.screen = pygame.display.set_mode((self.cols * SIZE, self.rows * SIZE))
         self.init_game()
 
-    def create_table(self, rows, cols, mines):
-        table = [[0] * cols for _ in range(rows)]
+    def create_table(self, mines):
+        table = [[0] * self.cols for _ in range(self.rows)]
         while mines > 0:
-            i = randint(0, rows-1)
-            j = randint(0, cols-1)
+            i = randint(0, self.rows-1)
+            j = randint(0, self.cols-1)
             if table[i][j] != MINE:
                 table[i][j] = MINE
                 mines -= 1
 
-        for i in range(rows):
-            for j in range(cols):
+        for i in range(self.rows):
+            for j in range(self.cols):
                 if table[i][j] != MINE:
                     ij = [(i, j+1), (i, j-1), (i+1, j), (i+1, j+1), (i+1, j-1), (i-1, j), (i-1, j+1), (i-1, j-1)]
                     for (ii, jj) in ij:
-                        if 0 <= ii < rows and 0 <= jj < cols and table[ii][jj] == MINE:
+                        if 0 <= ii < self.rows and 0 <= jj < self.cols and table[ii][jj] == MINE:
                             table[i][j] += 1
         return table
 
@@ -64,7 +64,7 @@ class Game:
         self.run, self.win, self.auto = True, False, False
         self.point, self.open = 0, 0
         self.boom_cell = None
-        table = self.create_table(self.rows, self.cols, self.mines)
+        table = self.create_table(self.mines)
         self.squares = [[] for _ in range(self.rows)]
         for i in range(self.rows):
             for j in range(self.cols):
