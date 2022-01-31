@@ -46,30 +46,23 @@ class Game:
                 self.ij += [(i,j)]
         self.init_game()
 
-    def create_table(self):
-        table = [[0] * self.cols for _ in range(self.rows)]
-        mines = random.sample(self.ij, self.mines)
-        for i,j in self.ij:
-            if (i,j) in mines:
-               table[i][j] = MINE 
-
-        for i,j in self.ij:
-            if table[i][j] != MINE:
-                ij = [(i, j+1), (i, j-1), (i+1, j), (i+1, j+1), (i+1, j-1), (i-1, j), (i-1, j+1), (i-1, j-1)]
-                for (ii, jj) in ij:
-                    if 0 <= ii < self.rows and 0 <= jj < self.cols and table[ii][jj] == MINE:
-                        table[i][j] += 1
-        return table
-
     def init_game(self):
         self.run, self.win, self.auto = True, False, False
         self.point, self.open = 0, 0
         self.boom_cell = None
-        table = self.create_table()
+
+        mines = random.sample(self.ij, self.mines)
         self.squares = [[] for _ in range(self.rows)]
         for i,j in self.ij:
-            square = Square(i, j, SIZE, SIZE, table[i][j])
+            val = MINE if (i,j) in mines else 0
+            square = Square(i, j, SIZE, SIZE, val)
             self.squares[i] += [square]
+        for i,j in self.ij:
+            if self.squares[i][j].val != MINE:
+                ij = [(i, j+1), (i, j-1), (i+1, j), (i+1, j+1), (i+1, j-1), (i-1, j), (i-1, j+1), (i-1, j-1)]
+                for (ii, jj) in ij:
+                    if 0 <= ii < self.rows and 0 <= jj < self.cols and self.squares[ii][jj].val == MINE:
+                        self.squares[i][j].val += 1
 
     def start(self):
         while True:
