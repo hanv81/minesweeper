@@ -67,10 +67,9 @@ class Game:
         self.boom_cell = None
         table = self.create_table()
         self.squares = [[] for _ in range(self.rows)]
-        for i in range(self.rows):
-            for j in range(self.cols):
-                square = Square(i, j, SIZE, SIZE, table[i][j])
-                self.squares[i] += [square]
+        for i,j in self.ij:
+            square = Square(i, j, SIZE, SIZE, table[i][j])
+            self.squares[i] += [square]
 
     def start(self):
         while True:
