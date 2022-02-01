@@ -39,11 +39,8 @@ class Game:
         self.cols = cols
         self.mines = mines
         self.agent = agent
+        self.cells = rows * cols
         self.screen = pygame.display.set_mode((self.cols * SIZE, self.rows * SIZE))
-        self.ij = []
-        for i in range(rows):
-            for j in range(cols):
-                self.ij += [(i,j)]
         self.init_game()
 
     def init_game(self):
@@ -51,18 +48,19 @@ class Game:
         self.point, self.open = 0, 0
         self.boom_cell = None
 
-        mines = random.sample(self.ij, self.mines)
-        self.squares = [[] for _ in range(self.rows)]
-        for i,j in self.ij:
-            val = MINE if (i,j) in mines else 0
-            square = Square(i, j, SIZE, SIZE, val)
-            self.squares[i] += [square]
-        for i,j in self.ij:
-            if self.squares[i][j].val != MINE:
-                ij = [(i, j+1), (i, j-1), (i+1, j), (i+1, j+1), (i+1, j-1), (i-1, j), (i-1, j+1), (i-1, j-1)]
-                for (ii, jj) in ij:
-                    if 0 <= ii < self.rows and 0 <= jj < self.cols and self.squares[ii][jj].val == MINE:
-                        self.squares[i][j].val += 1
+        mines = random.sample(range(self.cells), self.mines)
+        self.squares = []
+        for r in range(self.cells):
+            val = MINE if r in mines else 0
+            square = Square(r // self.cols, r % self.cols, SIZE, SIZE, val)
+            self.squares += [square]
+        for i in range(self.cells):
+            if self.squares[i].val != MINE:
+                r,c = i // self.cols, i % self.cols
+                rc = [(r, c+1), (r, c-1), (r+1, c), (r+1, c+1), (r+1, c-1), (r-1, c), (r-1, c+1), (r-1, c-1)]
+                for r,c in rc:
+                    if 0 <= r <self.rows and 0 <= c < self.cols and self.squares[r * self.cols + c].val == MINE:
+                        self.squares[i].val += 1
 
     def start(self):
         while True:
@@ -74,8 +72,7 @@ class Game:
             self.paint()
 
     def paint(self):
-        for i,j in self.ij:
-            square = self.squares[i][j]
+        for square in self.squares:
             if square.visible:
                 self.screen.blit(NUMBERS[square.val], (square.x, square.y))
             else:
@@ -101,12 +98,13 @@ class Game:
         self.open += 1
         square.visible = True
         if square.val == 0:
-            i, j = square.i, square.j
-            ij = [(i, j+1), (i, j-1), (i+1, j), (i+1, j+1), (i+1, j-1), (i-1, j), (i-1, j+1), (i-1, j-1)]
-            for i,j in ij:
-                if 0 <= i < self.rows and 0 <= j < self.cols:
-                    if not self.squares[i][j].visible and not self.squares[i][j].flag:
-                        self.open_square_recursive(self.squares[i][j])
+            r,c = square.i, square.j
+            rc = [(r, c+1), (r, c-1), (r+1, c), (r+1, c+1), (r+1, c-1), (r-1, c), (r-1, c+1), (r-1, c-1)]
+            for r,c in rc:
+                if 0 <=r <self.rows and 0 <=c< self.cols:
+                    square = self.squares[r * self.cols + c]
+                    if not square.visible and not square.flag:
+                        self.open_square_recursive(square)
 
     def open_square(self, square):
         if square.val == MINE:
@@ -137,15 +135,14 @@ class Game:
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 if self.run:
                     r = pygame.rect.Rect(pygame.mouse.get_pos(), (1,1))
-                    for i,j in self.ij:
-                        square = self.squares[i][j]
-                        if square.rect.colliderect(r):
+                    for square in self.squares:
+                        if square.rect.colliderect(r) and not square.visible:
                             if event.button == 1:   # LEFT CLICK
                                 if not square.flag:
                                     self.open_square(square)
                             elif event.button == 3: # RIGHT CLICK
-                                if not square.visible:
-                                    square.flag = not square.flag
+                                square.flag = not square.flag
+                            break
                 else:
                     self.init_game()
 
