@@ -38,7 +38,6 @@ class Game:
         self.cols = cols
         self.mines = mines
         self.agent = agent
-        self.cells = rows * cols
         self.screen = pygame.display.set_mode((self.cols * SIZE, self.rows * SIZE))
         self.init_game()
 
@@ -47,18 +46,18 @@ class Game:
         self.point, self.open = 0, 0
         self.boom_cell = None
 
-        mines = random.sample(range(self.cells), self.mines)
+        mines = random.sample(range(self.rows*self.cols), self.mines)
         self.squares = []
-        for i in range(self.cells):
+        for i in range(self.rows*self.cols):
             val = MINE if i in mines else 0
             square = Square(i, i // self.cols, i % self.cols, SIZE, SIZE, val)
             self.squares += [square]
-        for i in range(self.cells):
+        for i in range(self.rows*self.cols):
             if self.squares[i].val != MINE:
                 r,c = i // self.cols, i % self.cols
                 rc = [(r, c+1), (r, c-1), (r+1, c), (r+1, c+1), (r+1, c-1), (r-1, c), (r-1, c+1), (r-1, c-1)]
                 for r,c in rc:
-                    if 0 <= r <self.rows and 0 <= c < self.cols and self.squares[r * self.cols + c].val == MINE:
+                    if 0 <= r < self.rows and 0 <= c < self.cols and self.squares[r * self.cols + c].val == MINE:
                         self.squares[i].val += 1
 
     def start(self):
@@ -100,7 +99,7 @@ class Game:
             r,c = square.i // self.cols, square.i % self.cols
             rc = [(r, c+1), (r, c-1), (r+1, c), (r+1, c+1), (r+1, c-1), (r-1, c), (r-1, c+1), (r-1, c-1)]
             for r,c in rc:
-                if 0 <=r <self.rows and 0 <=c< self.cols:
+                if 0 <= r < self.rows and 0 <= c < self.cols:
                     square = self.squares[r * self.cols + c]
                     if not square.visible and not square.flag:
                         self.open_square_recursive(square)
