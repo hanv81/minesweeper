@@ -27,17 +27,13 @@ SIZE = GREY.get_width()
 
 class Square:
     def __init__(self, i, r, c, w, h, val):
-        self.i, self.x, self.y = i, c*w, r*h
-        self.val = val
+        self.i, self.x, self.y, self.val = i, c*w, r*h, val
         self.visible, self.flag = False, False
         self.rect = pygame.rect.Rect(self.x, self.y, w, h)
 
 class Game:
     def __init__(self, rows, cols, mines, agent):
-        self.rows = rows
-        self.cols = cols
-        self.mines = mines
-        self.agent = agent
+        self.rows, self.cols, self.mines, self.agent = rows, cols, mines, agent
         self.screen = pygame.display.set_mode((self.cols * SIZE, self.rows * SIZE))
         self.init_game()
 
