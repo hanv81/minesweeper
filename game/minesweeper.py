@@ -1,4 +1,3 @@
-from random import randint
 import pygame
 import numpy as np
 import time
@@ -134,10 +133,10 @@ class Game:
                     r = pygame.rect.Rect(pygame.mouse.get_pos(), (1,1))
                     for square in self.squares:
                         if square.rect.colliderect(r) and not square.visible:
-                            if event.button == 1:   # LEFT CLICK
+                            if event.button == pygame.BUTTON_LEFT:
                                 if not square.flag:
                                     self.open_square(square)
-                            elif event.button == 3: # RIGHT CLICK
+                            elif event.button == pygame.BUTTON_RIGHT:
                                 square.flag = not square.flag
                             break
                 else:
@@ -193,7 +192,7 @@ class Game:
 
     def agent_play(self):
         if self.point == 0:
-            i = randint(0, self.rows * self.cols - 1)
+            i = random.randint(0, self.rows * self.cols - 1)
             square = self.squares[i]
         else:
             if HEURISTIC:
