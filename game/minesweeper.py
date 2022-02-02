@@ -26,9 +26,8 @@ NUMBERS = [ZERO, ONE, TWO, THREE, FOUR, FIVE, SIX, SEVEN, EIGHT, BOMB]
 SIZE = GREY.get_width()
 
 class Square:
-    def __init__(self, i, j, w, h, val):
-        self.i, self.j = i, j
-        self.x, self.y = j*w, i*h
+    def __init__(self, i, r, c, w, h, val):
+        self.i, self.x, self.y = i, c*w, r*h
         self.val = val
         self.visible, self.flag = False, False
         self.rect = pygame.rect.Rect(self.x, self.y, w, h)
@@ -52,7 +51,7 @@ class Game:
         self.squares = []
         for i in range(self.cells):
             val = MINE if i in mines else 0
-            square = Square(i // self.cols, i % self.cols, SIZE, SIZE, val)
+            square = Square(i, i // self.cols, i % self.cols, SIZE, SIZE, val)
             self.squares += [square]
         for i in range(self.cells):
             if self.squares[i].val != MINE:
@@ -98,7 +97,7 @@ class Game:
         self.open += 1
         square.visible = True
         if square.val == 0:
-            r,c = square.i, square.j
+            r,c = square.i // self.cols, square.i % self.cols
             rc = [(r, c+1), (r, c-1), (r+1, c), (r+1, c+1), (r+1, c-1), (r-1, c), (r-1, c+1), (r-1, c-1)]
             for r,c in rc:
                 if 0 <=r <self.rows and 0 <=c< self.cols:
