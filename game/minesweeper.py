@@ -128,6 +128,8 @@ class Game:
                         self.init_game()
                 elif event.key == pygame.K_a:
                     self.auto = True
+                elif event.key == pygame.K_f:
+                    self.flagging()
                 elif event.key == pygame.K_ESCAPE:
                     self.run = False
                     pygame.quit()
@@ -145,65 +147,61 @@ class Game:
                 else:
                     self.init_game()
 
-    def heuristic(self):
-        for i,j in self.ij:
-            if not self.squares[i][j].visible:
-                self.squares[i][j].flag = False
-        for i,j in self.ij:
-            square = self.squares[i][j]
-            if square.visible and square.val > 0:  # square is open
+    def flagging(self):
+        for square in self.squares:
+            if not square.visible:
+                square.flag = False
+
+        for square in self.squares:
+            if square.visible and square.val > 0:  # square is open and have mines around
                 neibors, neibors_flag = [], []
-                rc = [(i, j+1), (i, j-1), (i+1, j), (i+1, j+1), (i+1, j-1), (i-1, j), (i-1, j+1), (i-1, j-1)]
+                r,c = square.i // self.cols, square.i % self.cols
+                rc = [(r, c+1), (r, c-1), (r+1, c), (r+1, c+1), (r+1, c-1), (r-1, c), (r-1, c+1), (r-1, c-1)]
                 for r,c in rc:
-                    if 0<=r<self.rows and 0<=c<self.cols:
-                        if not self.squares[r][c].visible:
-                            if self.squares[r][c].flag:
-                                neibors_flag.append(self.squares[r][c])
+                    if 0 <= r < self.rows and 0 <= c < self.cols:
+                        sqr = self.squares[r*self.cols + c]
+                        if not sqr.visible:
+                            if sqr.flag:
+                                neibors_flag.append(sqr)
                             else:
-                                neibors.append(self.squares[r][c])
+                                neibors.append(sqr)
                 if len(neibors) == square.val - len(neibors_flag):
-                    for n in neibors:
-                        n.flag = True
+                    for sqr in neibors:
+                        sqr.flag = True
         time.sleep(0.5)
 
     def agent_action(self):
-        action = 0
         state = []
         clicked = []
-        for row in self.squares:
-            r = []
-            for square in row:
-                if square.visible or square.flag:
-                    r.append(square.val)
-                    clicked.append(action)
-                else:
-                    r.append(-1)    # UNKNOWN
-                action += 1
-            state.append(r)
-        qs = self.agent.predict(np.array(state))[0]
+        for square in self.squares:
+            if square.visible or square.flag:
+                state.append(square.val)
+                clicked.append(square.i)
+            else:
+                state.append(-1)    # UNKNOWN
+
+        state = np.array(state).reshape((self.rows, self.cols))
+        qs = self.agent.predict(state)[0]
         for cell in clicked:
             qs[cell] = np.min(qs)
         if np.max(qs) > np.min(qs):
-            action = np.argmax(qs)
-            i, j = action // self.cols, action % self.cols
-            square = self.squares[i][j]
-        else:
-            print('no max q, just random')
-            cells_to_click = []
-            for i,j in self.ij:
-                if not self.squares[j][j].visible and not self.squares[i][j].flag:
-                    cells_to_click.append(self.squares[i][j])
-            square = random.sample(cells_to_click, 1)[0]
+            return self.squares[np.argmax(qs)]
+
+        print('no max q, just random')
+        cells_to_click = []
+        for square in self.squares:
+            if not square.visible and not square.flag:
+                cells_to_click.append(square)
+        square = random.sample(cells_to_click, 1)[0]
         return square
 
     def agent_play(self):
         if self.point == 0:
-            action = randint(0, self.rows * self.cols - 1)
-            i, j = action // self.cols, action % self.cols
-            square = self.squares[i][j]
+            i = randint(0, self.rows * self.cols - 1)
+            square = self.squares[i]
         else:
             if HEURISTIC:
-                self.heuristic()
+                self.flagging()
             square = self.agent_action()
 
         if not square.flag:
