@@ -48,13 +48,14 @@ class Game:
             val = MINE if i in mines else 0
             square = Square(i, i // self.cols, i % self.cols, SIZE, SIZE, val)
             self.squares += [square]
-        for i in range(self.rows*self.cols):
-            if self.squares[i].val != MINE:
-                r,c = i // self.cols, i % self.cols
+
+        for square in self.squares:
+            if square.val != MINE:
+                r,c = square.i // self.cols, square.i % self.cols
                 rc = [(r, c+1), (r, c-1), (r+1, c), (r+1, c+1), (r+1, c-1), (r-1, c), (r-1, c+1), (r-1, c-1)]
                 for r,c in rc:
                     if 0 <= r < self.rows and 0 <= c < self.cols and self.squares[r * self.cols + c].val == MINE:
-                        self.squares[i].val += 1
+                        square.val += 1
 
     def start(self):
         while True:
