@@ -50,9 +50,9 @@ class Game:
 
         mines = random.sample(range(self.cells), self.mines)
         self.squares = []
-        for r in range(self.cells):
-            val = MINE if r in mines else 0
-            square = Square(r // self.cols, r % self.cols, SIZE, SIZE, val)
+        for i in range(self.cells):
+            val = MINE if i in mines else 0
+            square = Square(i // self.cols, i % self.cols, SIZE, SIZE, val)
             self.squares += [square]
         for i in range(self.cells):
             if self.squares[i].val != MINE:
