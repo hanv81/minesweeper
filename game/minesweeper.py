@@ -7,21 +7,11 @@ MINE = 9
 HEURISTIC = True
 PATH = './game/image/'
 GREY = pygame.image.load(PATH + 'grey.png')
-ZERO = pygame.image.load(PATH + '0.png')
-ONE = pygame.image.load(PATH + '1.png')
-TWO = pygame.image.load(PATH + '2.png')
-THREE = pygame.image.load(PATH + '3.png')
-FOUR = pygame.image.load(PATH + '4.png')
-FIVE = pygame.image.load(PATH + '5.png')
-SIX = pygame.image.load(PATH + '6.png')
-SEVEN = pygame.image.load(PATH + '7.png')
-EIGHT = pygame.image.load(PATH + '8.png')
-BOMB = pygame.image.load(PATH + 'bomb.png')
 FLAG = pygame.image.load(PATH + 'flag.png')
 BOOM = pygame.image.load(PATH + 'boom.png')
 GLASSES = pygame.image.load(PATH + 'sun-glasses.png')
 SAD = pygame.image.load(PATH + 'sun-sad.png')
-NUMBERS = [ZERO, ONE, TWO, THREE, FOUR, FIVE, SIX, SEVEN, EIGHT, BOMB]
+NUMBERS = [pygame.image.load(PATH + str(i) + '.png') for i in range(10)]
 SIZE = GREY.get_width()
 
 class Square:
@@ -75,7 +65,7 @@ class Game:
                 elif self.run or square.val != MINE:
                     self.screen.blit(GREY, (square.x, square.y))
                 else:
-                    self.screen.blit(BOMB, (square.x, square.y))
+                    self.screen.blit(NUMBERS[MINE], (square.x, square.y))
 
         if not self.run:
             if self.win:
