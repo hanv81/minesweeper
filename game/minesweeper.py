@@ -176,7 +176,7 @@ class Game:
             for square in self.squares:
                 if not square.visible and not square.flag:
                     cells_to_click.append(square)
-            square = random.sample(cells_to_click, 1)[0]
+            return random.sample(cells_to_click, 1)[0]
         else:
             while True:
                 i = self.agent.act(state)
