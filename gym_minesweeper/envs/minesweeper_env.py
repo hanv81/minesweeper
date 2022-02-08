@@ -62,13 +62,10 @@ class Minesweeper(gym.Env):
 	def reset(self):
 		# Internal state: where are all the mines?
 		self.mine_coords = set()
-		mines_to_place = self.mines
-		while mines_to_place > 0:
-			r = random.randrange(self.rows)
-			c = random.randrange(self.cols)
-			if (r, c) not in self.mine_coords:  # new coord
-				self.mine_coords.add((r, c))
-				mines_to_place -= 1
+		mines = random.sample(range(self.rows*self.cols), self.mines)
+		for m in mines:
+			self.mine_coords.add((m // self.cols, m % self.cols))
+
 		# print("MINE locations:", self.mine_coords)
 		self.state = np.full([self.rows, self.cols], UNKNOWN)
 		self.coords_to_clear = self.rows * self.cols - self.mines
