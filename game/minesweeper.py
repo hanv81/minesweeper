@@ -156,16 +156,12 @@ class Game:
         time.sleep(0.5)
 
     def agent_action(self):
-        state = []
+        state = np.full((self.rows, self.cols), -1)
         clicked = []
         for square in self.squares:
             if square.visible:
-                state.append(square.val)
+                state[square.i // self.cols, square.i % self.cols] = square.val
                 clicked.append(square.i)
-            else:
-                state.append(-1)    # UNKNOWN
-
-        state = np.array(state).reshape((self.rows, self.cols))
 
         if self.agent.is_value_based():
             qs = self.agent.predict(state)[0]
