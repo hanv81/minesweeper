@@ -32,11 +32,11 @@ class Minesweeper(gym.Env):
 		self.coords_to_clear -= 1
 
 		if neighboring_mines == 0:
-			for r in range(coord[0]-1, coord[0]+2):
-				for c in range(coord[1]-1, coord[1]+2):
-					if r != coord[0] or c != coord[1]:
-						if 0<=r<self.rows and 0<=c<self.cols and self.state[r,c] == -1:
-							cells.extend(self.scanCoord((r,c)))
+			r,c = coord[0], coord[1]
+			rc = ((r, c+1), (r, c-1), (r+1, c), (r+1, c+1), (r+1, c-1), (r-1, c), (r-1, c+1), (r-1, c-1))
+			for r,c in rc:
+				if 0 <= r < self.rows and 0 <= c < self.cols and self.state[r, c] == UNKNOWN:
+					cells.extend(self.scanCoord((r, c)))
 		return cells
 
 	def step(self, action):
