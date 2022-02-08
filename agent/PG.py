@@ -37,6 +37,9 @@ class PG:
   def load_model(self, path):
     self.model = keras.models.load_model(path)
 
+  def is_value_based(self):
+    return False
+
   def act(self, state):
     prediction = self.model.predict(state[None, ...])[0]
     return np.random.choice(self.action_size, p=prediction)

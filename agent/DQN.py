@@ -42,6 +42,9 @@ class DQN:
   def load_model(self, path):
     self.model = keras.models.load_model(path)
 
+  def is_value_based(self):
+    return True
+
   def predict(self, state):
     return self.model.predict(state[None, ...])
 

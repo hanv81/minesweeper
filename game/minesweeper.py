@@ -4,7 +4,6 @@ import time
 import random
 
 MINE = 9
-HEURISTIC = True
 PATH = './game/image/'
 GREY = pygame.image.load(PATH + 'grey.png')
 FLAG = pygame.image.load(PATH + 'flag.png')
@@ -23,6 +22,7 @@ class Square:
 class Game:
     def __init__(self, rows, cols, mines, agent):
         self.rows, self.cols, self.mines, self.agent = rows, cols, mines, agent
+        self.agent.action_size = rows * cols
         self.screen = pygame.display.set_mode((self.cols * SIZE, self.rows * SIZE))
         self.init_game()
 
@@ -92,7 +92,7 @@ class Game:
 
     def open_square(self, square):
         if square.val == MINE:
-            print('BOMBS')
+            print('BOMBS', self.point)
             self.boom_cell = square
             self.run, self.auto = False, False
         else:
@@ -100,7 +100,7 @@ class Game:
             self.open_square_recursive(square)
             if self.open == self.rows * self.cols - self.mines:
                 self.run, self.win, self.auto = False, True, False
-                print('WIN')
+                print('WIN', self.point)
 
     def user_play(self):
         for event in pygame.event.get():
@@ -159,37 +159,44 @@ class Game:
         state = []
         clicked = []
         for square in self.squares:
-            if square.visible or square.flag:
+            if square.visible:
                 state.append(square.val)
                 clicked.append(square.i)
             else:
                 state.append(-1)    # UNKNOWN
 
         state = np.array(state).reshape((self.rows, self.cols))
-        qs = self.agent.predict(state)[0]
-        for cell in clicked:
-            qs[cell] = np.min(qs)
-        if np.max(qs) > np.min(qs):
-            return self.squares[np.argmax(qs)]
 
-        print('no max q, just random')
-        cells_to_click = []
-        for square in self.squares:
-            if not square.visible and not square.flag:
-                cells_to_click.append(square)
-        square = random.sample(cells_to_click, 1)[0]
-        return square
+        if self.agent.is_value_based():
+            qs = self.agent.predict(state)[0]
+            for square in self.squares:
+                if square.i in clicked or square.flag:
+                    qs[square.i] = np.min(qs)
+            if np.max(qs) > np.min(qs):
+                return self.squares[np.argmax(qs)]
+
+            print('no max q, just random')
+            cells_to_click = []
+            for square in self.squares:
+                if not square.visible and not square.flag:
+                    cells_to_click.append(square)
+            square = random.sample(cells_to_click, 1)[0]
+        else:
+            while True:
+                i = self.agent.act(state)
+                if not self.squares[i].visible:
+                    return self.squares[i]
 
     def agent_play(self):
         if self.point == 0:
             i = random.randint(0, self.rows * self.cols - 1)
             square = self.squares[i]
         else:
-            if HEURISTIC:
+            if self.agent.is_value_based():
                 self.flagging()
             square = self.agent_action()
 
-        if not square.flag:
+        if not square.visible and not square.flag:
             self.open_square(square)
         time.sleep(1)
 
