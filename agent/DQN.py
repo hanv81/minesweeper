@@ -1,6 +1,5 @@
-from tensorflow.keras.models import Model
+from tensorflow.keras.models import Model, clone_model, load_model
 from tensorflow.keras.layers import Dense, Input, Flatten, Conv2D, MaxPooling2D
-from tensorflow import keras
 from collections import deque
 from tqdm import tqdm
 import random
@@ -34,13 +33,13 @@ class DQN:
     output = Dense(rows * cols, activation='linear')(layer)
     self.model = Model(input, output)
     self.model.compile(loss='mse', optimizer='adam', metrics='accuracy')
-    self.target = keras.models.clone_model(self.model)
+    self.target = clone_model(self.model)
 
   def save_model(self):
     self.model.save('dqn.h5')
 
   def load_model(self, path):
-    self.model = keras.models.load_model(path)
+    self.model = load_model(path)
 
   def is_value_based(self):
     return True
