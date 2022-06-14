@@ -1,7 +1,6 @@
 import torch
 import torch.nn as nn
 import torch.optim as optim
-import torch.nn.functional as F
 from collections import deque
 import random
 import numpy as np
@@ -13,14 +12,15 @@ class Net(nn.Module):
         self.rows = rows
         self.cols = cols
         self.cnn = cnn
-        self.fc1 = nn.Linear(rows*cols, 512)
-        self.fc2 = nn.Linear(512, rows*cols)
+        self.layers = nn.Sequential(
+            nn.Flatten(),
+            nn.Linear(rows*cols, 512),
+            nn.ReLU(),
+            nn.Linear(512, rows*cols),
+        )
 
     def forward(self, x):
-        x = x.view(x.size(0), -1)
-        x = F.relu(self.fc1(x))
-        x = self.fc2(x)
-        return x
+        return self.layers(x)
 
 class DQNTorch(DQN):
     def create_model(self, rows, cols, cnn=False):
@@ -29,7 +29,7 @@ class DQNTorch(DQN):
         self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
         self.model = Net(rows, cols, cnn).to(self.device)
         self.target = Net(rows, cols, cnn).to(self.device)
-        self.optimizer = optim.Adam(self.model.parameters(), lr=1e-6)
+        self.optimizer = optim.Adam(self.model.parameters(), lr=3e-1)
         self.criterion = nn.MSELoss()
 
     def save_model(self):
