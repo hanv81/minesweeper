@@ -23,7 +23,7 @@ class DQN:
     input = Input(shape=(rows, cols, 1))
     if cnn:
       self.cnn = True
-      layer = Conv2D(filters=8, kernel_size=2, padding='same', activation='relu')(input)
+      layer = Conv2D(filters=8, kernel_size=3, padding='same', activation='relu')(input)
       layer = MaxPooling2D()(layer)
       layer = Flatten()(layer)
     else:
@@ -32,7 +32,7 @@ class DQN:
     layer = Dense(512, activation='relu')(layer)
     output = Dense(rows * cols, activation='linear')(layer)
     self.model = Model(input, output)
-    self.model.compile(loss='mse', optimizer='adam', metrics='accuracy')
+    self.model.compile(loss='mse', optimizer='adam')
     self.target = clone_model(self.model)
 
   def save_model(self):

@@ -1,4 +1,4 @@
-from tensorflow.keras.models import Model
+from tensorflow.keras.models import Model, clone_model
 from tensorflow.keras.layers import Dense, Input, Flatten, Conv2D, MaxPooling2D, Add
 from tensorflow import keras
 from agent.DoubleDQN import DoubleDQN
@@ -10,7 +10,7 @@ class DDQN(DoubleDQN):
     input = Input(shape=(rows, cols, 1))
     if cnn:
       self.cnn = True
-      layer = Conv2D(filters=8, kernel_size=2, padding='same', activation='relu')(input)
+      layer = Conv2D(filters=8, kernel_size=3, padding='same', activation='relu')(input)
       layer = MaxPooling2D()(layer)
       layer = Flatten()(layer)
     else:
@@ -22,8 +22,8 @@ class DDQN(DoubleDQN):
     advantage = Dense(rows * cols, activation='linear')(advantage)
     output = Add()([value, advantage])
     self.model = Model(input, output)
-    self.model.compile(loss='mse', optimizer='adam', metrics='accuracy')
-    self.target = keras.models.clone_model(self.model)
+    self.model.compile(loss='mse', optimizer='adam')
+    clone_model(self.model)
 
   def save_model(self):
     self.model.save('ddqn.h5')
