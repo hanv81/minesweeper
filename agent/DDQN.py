@@ -19,7 +19,7 @@ class DDQN(DoubleDQN):
     value = Dense(512, activation='relu')(layer)
     value = Dense(1, activation='linear')(value)
     advantage = Dense(512, activation='relu')(layer)
-    advantage = Dense(rows * cols, activation='linear')(advantage)
+    advantage = Dense(rows * cols)(advantage)
     output = Add()([value, advantage])
     self.model = Model(input, output)
     self.model.compile(loss='mse', optimizer='adam')

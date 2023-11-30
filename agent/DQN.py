@@ -30,7 +30,7 @@ class DQN:
       self.cnn = False
       layer = Flatten()(input)
     layer = Dense(512, activation='relu')(layer)
-    output = Dense(rows * cols, activation='linear')(layer)
+    output = Dense(rows * cols)(layer)
     self.model = Model(input, output)
     self.model.compile(loss='mse', optimizer='adam')
     self.target = clone_model(self.model)
