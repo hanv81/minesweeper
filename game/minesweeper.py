@@ -22,7 +22,8 @@ class Square:
 class Game:
     def __init__(self, rows, cols, mines, agent):
         self.rows, self.cols, self.mines, self.agent = rows, cols, mines, agent
-        self.agent.action_size = rows * cols
+        if agent is not None:
+            self.agent.action_size = rows * cols
         self.screen = pygame.display.set_mode((self.cols * SIZE, self.rows * SIZE))
         self.init_game()
 
@@ -41,7 +42,7 @@ class Game:
         for square in self.squares:
             if square.val != MINE:
                 r,c = square.i // self.cols, square.i % self.cols
-                rc = [(r, c+1), (r, c-1), (r+1, c), (r+1, c+1), (r+1, c-1), (r-1, c), (r-1, c+1), (r-1, c-1)]
+                rc = (r, c+1), (r, c-1), (r+1, c), (r+1, c+1), (r+1, c-1), (r-1, c), (r-1, c+1), (r-1, c-1)
                 for r,c in rc:
                     if 0 <= r < self.rows and 0 <= c < self.cols and self.squares[r * self.cols + c].val == MINE:
                         square.val += 1
@@ -141,7 +142,7 @@ class Game:
             if square.visible and square.val > 0:  # square is open and have mines around
                 neibors, neibors_flag = [], []
                 r,c = square.i // self.cols, square.i % self.cols
-                rc = [(r, c+1), (r, c-1), (r+1, c), (r+1, c+1), (r+1, c-1), (r-1, c), (r-1, c+1), (r-1, c-1)]
+                rc = (r, c+1), (r, c-1), (r+1, c), (r+1, c+1), (r+1, c-1), (r-1, c), (r-1, c+1), (r-1, c-1)
                 for r,c in rc:
                     if 0 <= r < self.rows and 0 <= c < self.cols:
                         sqr = self.squares[r*self.cols + c]
