@@ -36,7 +36,7 @@ class DQN:
     self.target = clone_model(self.model)
 
   def save_model(self):
-    self.model.save('dqn.h5')
+    self.model.save('dqn.keras')
 
   def load_model(self, path):
     self.model = load_model(path)
@@ -45,7 +45,7 @@ class DQN:
     return True
 
   def predict(self, state):
-    return self.model.predict(state[None, ...])
+    return self.model.predict(state[None, ...], verbose=0)
 
   def update_target(self):
     self.target.set_weights(self.model.get_weights()) 
@@ -56,21 +56,16 @@ class DQN:
       return
 
     batch = random.sample(self.replay_memory, self.BATCH_SIZE)
-    states = np.array([transition[0] for transition in batch])
-    qs = self.model.predict(states)
+    states = np.array([state for state,_,_,_,_ in batch])
+    qs = self.model.predict(states, verbose=0)
 
-    next_states = np.array([transition[3] for transition in batch])
-    next_qs = self.target.predict(next_states)
+    next_states = np.array([next_state for _,_,_,next_state,_ in batch])
+    next_qs = self.target.predict(next_states, verbose=0)
 
-    X = []
-    y = []
+    for index, (_, action, reward, _, done) in enumerate(batch):
+      qs[index][action] = reward + (1 - done) * self.GAMMA * np.max(next_qs[index])
 
-    for index, (state, action, reward, _, done) in enumerate(batch):
-      qs[index][action] = reward + (1 - int(done)) * self.GAMMA * np.max(next_qs[index])
-      X.append(state)
-      y.append(qs[index])
-
-    self.model.fit(np.array(X), np.array(y), batch_size=self.BATCH_SIZE, verbose=0)
+    self.model.fit(states, qs, batch_size=self.BATCH_SIZE, verbose=0)
 
   def act(self, state, cells_to_click, clicked_cells):
     if random.random() >= self.epsilon:

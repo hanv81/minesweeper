@@ -24,6 +24,3 @@ class DDQN(DoubleDQN):
     self.model = Model(input, output)
     self.model.compile(loss='mse', optimizer='adam')
     clone_model(self.model)
-
-  def save_model(self):
-    self.model.save('ddqn.h5')

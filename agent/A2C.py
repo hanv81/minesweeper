@@ -35,7 +35,7 @@ class A2C(PG):
     self.Critic.compile(loss='mse', optimizer=RMSprop(learning_rate=LR))
 
   def save_model(self):
-    self.Actor.save('a2c.h5')
+    self.Actor.save('a2c.keras')
 
   def load_model(self, path):
     self.Actor = keras.models.load_model(path)

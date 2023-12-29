@@ -32,7 +32,7 @@ class PG:
     self.model.compile(loss='categorical_crossentropy', optimizer=RMSprop(learning_rate=LR))
 
   def save_model(self):
-    self.model.save('pg.h5')
+    self.model.save('pg.keras')
 
   def load_model(self, path):
     self.model = keras.models.load_model(path)
