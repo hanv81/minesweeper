@@ -68,14 +68,14 @@ class DQN:
     self.model.fit(states, qs, batch_size=self.BATCH_SIZE, verbose=0)
 
   def act(self, state, cells_to_click, clicked_cells):
-    if random.random() >= self.epsilon:
+    if np.random.rand() >= self.epsilon:
       qs = self.predict(state)[0]
       for cell in clicked_cells:
         qs[cell] = np.min(qs)
       if np.max(qs) > np.min(qs): # if max = min -> random
         return np.argmax(qs)
 
-    return random.sample(cells_to_click, 1)[0]
+    return np.random.choice(cells_to_click)
 
   def train(self, episodes, env):
     avg = []
@@ -87,7 +87,7 @@ class DQN:
       clicked_cells = []
       cells_to_click = [x for x in range(0, self.rows * self.cols)]
       while not done:
-        action = random.randint(0, self.rows*self.cols-1) if point == 0 else self.act(state, cells_to_click, clicked_cells)
+        action = np.random.randint(self.rows*self.cols) if point == 0 else self.act(state, cells_to_click, clicked_cells)
         next_state, reward, done, info = env.step(action)
         if point > 0: # point = 0 -> first cell, just random, nothing to learn
           self.step((state, action, reward, next_state, done))
@@ -124,7 +124,7 @@ class DQN:
       clicked_cells = []
       cells_to_click = [x for x in range(0, rows * cols)]
       while not done:
-        action = random.randint(0, rows * cols - 1) if point == 0 else self.act(state, cells_to_click, clicked_cells)
+        action = np.random.randint(rows * cols) if point == 0 else self.act(state, cells_to_click, clicked_cells)
         next_state, reward, done, info = env.step(action)
         if reward > 0:
           if done:
